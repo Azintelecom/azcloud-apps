@@ -32,6 +32,11 @@ _unset_proxy()
   unset HTTPS_PROXY
 }
 
+_add_fw_rules()
+{
+  iptables -I INPUT -p tcp --dport 3306 -m commemt --comment "added by AzCloudApps"
+}
+
 _install_app()
 {
   _set_proxy
@@ -61,7 +66,7 @@ send \"$mysql_root_password\r\"
 expect \"Remove anonymous users?\"
 send \"y\r\"
 expect \"Disallow root login remotely?\"
-send \"y\r\"
+send \"n\r\"
 expect \"Remove test database and access to it?\"
 send \"y\r\"
 expect \"Reload privilege tables now?\"
@@ -70,6 +75,7 @@ expect eof
 ")
 
 echo "$secure_mysql"
+
 }
 
 main()
