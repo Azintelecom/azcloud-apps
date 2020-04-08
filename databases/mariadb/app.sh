@@ -7,6 +7,15 @@
 HTTP_PROXY="$PROXY"
 HTTPS_PROXY="$PROXY"
 
+_get_db_args()
+{
+  local apps_args db_pass
+  apps_args=$(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d)
+  db_pass="$(jq -r .appdata.dbpass <<< "$apps_args")"
+  [ $db_pass == null ] && db_pass="mariadb"
+  echo "$db_pass"
+}
+
 _set_proxy()
 {
   export http_proxy="$HTTP_PROXY"
@@ -33,9 +42,10 @@ _install_app()
 _deploy_app()
 {
 
-  sudo systemctl enable --now mariadb
   local mysql_root_password="$1"; shift
   local mysql_curr_password=""
+
+  sudo systemctl enable --now mariadb
 
   secure_mysql=$(expect -c "
 set timeout 1
@@ -64,8 +74,9 @@ echo "$secure_mysql"
 
 main()
 {
+  local args; args=$(_get_db_args)
   _install_app
-  _deploy_app "$@"
+  _deploy_app "$args"
 }
 
-main "$@"
+main
