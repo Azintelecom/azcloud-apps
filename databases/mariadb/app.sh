@@ -81,6 +81,7 @@ echo "$secure_mysql"
 main()
 {
   local args; args=$(_get_db_args)
+  _add_fw_rules
   _install_app
   _deploy_app "$args"
 }
