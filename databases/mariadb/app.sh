@@ -34,7 +34,7 @@ _unset_proxy()
 
 _add_fw_rules()
 {
-  sudo iptables -I INPUT -p tcp --dport 3306 -m commemt --comment "added by AzCloudApps"
+  sudo iptables -I INPUT -p tcp --dport 3306 -m comment --comment "added by AzCloudApps"
 }
 
 _install_app()
