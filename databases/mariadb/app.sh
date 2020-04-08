@@ -4,7 +4,6 @@
 # one single mariabd instance
 # 
 
-PROXY="http://proxy.azcloud.az:3128"
 HTTP_PROXY="$PROXY"
 HTTPS_PROXY="$PROXY"
 
@@ -24,14 +23,6 @@ _unset_proxy()
   unset HTTPS_PROXY
 }
 
-_prereq()
-{
-  _set_proxy
-  sudo -E yum -y install git
-  git clone https://github.com/azintelecom/azcloud-apps /tmp/apps
-  _unset_proxy
-}
-
 _install_app()
 {
   _set_proxy
@@ -41,11 +32,13 @@ _install_app()
 
 _deploy_app()
 {
+
+  sudo systemctl enable --now mariadb
   local mysql_root_password="$1"; shift
   local mysql_curr_password=""
 
   secure_mysql=$(expect -c "
-set timeout 5
+set timeout 1
 spawn mysql_secure_installation
 expect \"Enter current password for root (enter for none):\"
 send \"$mysql_curr_password\r\"
@@ -71,7 +64,6 @@ echo "$secure_mysql"
 
 main()
 {
-  _prereq
   _install_app
   _deploy_app "$@"
 }
