@@ -2,4 +2,4 @@
 
 APP_PATH="$1"; [ -z $APP_PATH ] && { echo "app not found"; exit 1; }
 APP_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-sudo bash "${APP_DIR}/${APP_PATH}"/app.sh 2>&1 >> /tmp/azcloud-apps/"${APP_PATH##*/}".log
+sudo bash "${APP_DIR}/${APP_PATH}"/app.sh >> /tmp/azcloud-apps/"${APP_PATH##*/}".log 2>&1
