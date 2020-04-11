@@ -12,7 +12,8 @@ _get_db_args()
   local apps_args db_pass
   apps_args=$(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d)
   db_pass="$(jq -r .appdata.dbpass <<< "$apps_args")"
-  [ $db_pass == null ] && db_pass="mariadb"
+  [[ $db_pass == "null" ]] && db_pass="mariadb"
+  export DB_PASS="$db_pass"
   echo "$db_pass"
 }
 
@@ -78,12 +79,24 @@ echo "$secure_mysql"
 
 }
 
+_finish()
+{
+  cat <<EOF
+##################################
+ AzCloudApp info:
+ APP MariaDB has been installed
+ DBPASS: "$DB_PASS"
+##################################
+EOF
+}
+
 main()
 {
   local args; args=$(_get_db_args)
   _add_fw_rules
   _install_app
   _deploy_app "$args"
+  _finish
 }
 
 main
