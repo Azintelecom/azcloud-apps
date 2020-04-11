@@ -11,7 +11,7 @@ _get_db_args()
 {
   local apps_args db_pass
   apps_args=$(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d)
-  db_pass="$(jq -r .appdata.dbpass <<< "$apps_args")"
+  db_pass="$(jq -r .apps.dbpass <<< "$apps_args")"
   [[ $db_pass == "null" ]] && db_pass="mariadb"
   export DB_PASS="$db_pass"
   echo "$db_pass"
