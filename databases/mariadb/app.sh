@@ -81,6 +81,7 @@ echo "$secure_mysql"
 
 _finish()
 {
+  echo "$DB_PASS"
   cat <<EOF
 ##################################
  AzCloudApp info:
