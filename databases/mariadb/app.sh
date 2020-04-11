@@ -4,8 +4,8 @@
 # one single mariabd instance
 # 
 
-HTTP_PROXY="$PROXY"
-HTTPS_PROXY="$PROXY"
+export HTTP_PROXY="$PROXY"
+export HTTPS_PROXY="$PROXY"
 
 _get_db_args()
 {
@@ -13,7 +13,6 @@ _get_db_args()
   apps_args=$(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d)
   db_pass="$(jq -r .apps.config.dbpass <<< "$apps_args")"
   [[ $db_pass == "null" ]] && db_pass="mariadb"
-  export DB_PASS="$db_pass"
   echo "$db_pass"
 }
 
@@ -85,7 +84,7 @@ _finish()
 ##################################
  AzCloudApp info:
  APP MariaDB has been installed
- DBPASS: "$DB_PASS"
+ DBPASS: "$1"
 ##################################
 EOF
 }
@@ -96,7 +95,7 @@ main()
   _add_fw_rules
   _install_app
   _deploy_app "$args"
-  _finish
+  _finish "$args"
 }
 
 main
