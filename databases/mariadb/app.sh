@@ -34,7 +34,7 @@ _unset_proxy()
 
 _add_fw_rules()
 {
-  sudo iptables -I INPUT -p tcp --dport 3306 -m comment --comment "added by AzCloudApps"
+  iptables -I INPUT -p tcp --dport 3306 -m comment --comment "added by AzCloudApps"
 }
 
 _selinux()
@@ -46,7 +46,7 @@ _selinux()
 _install_app()
 {
   _set_proxy
-  sudo -E yum -y install mariadb mariadb-server expect
+  yum -y install mariadb mariadb-server expect
   _unset_proxy
 }
 
@@ -56,7 +56,7 @@ _deploy_app()
   local mysql_root_password="$1"; shift
   local mysql_curr_password=""
 
-  sudo systemctl enable --now mariadb
+  systemctl enable --now mariadb
 
   secure_mysql=$(expect -c "
 set timeout 1
