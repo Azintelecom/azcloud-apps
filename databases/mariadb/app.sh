@@ -37,6 +37,12 @@ _add_fw_rules()
   sudo iptables -I INPUT -p tcp --dport 3306 -m comment --comment "added by AzCloudApps"
 }
 
+_selinux()
+{
+  sed -i '/^SELINUX=/s/enforcing/permissive/g' /etc/selinux/config
+  setenforce 0
+}
+
 _install_app()
 {
   _set_proxy
@@ -93,6 +99,7 @@ main()
 {
   local args; args=$(_get_db_args)
   _add_fw_rules
+  _selinux
   _install_app
   _deploy_app "$args"
   _finish "$args"
