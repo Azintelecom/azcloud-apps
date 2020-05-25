@@ -1,5 +1,25 @@
 #!/usr/bin/env bash
 
+export HTTP_PROXY="$PROXY"
+export HTTPS_PROXY="$PROXY"
+
+_set_proxy()
+{
+  export http_proxy="$HTTP_PROXY"
+  export https_proxy="$HTTPS_PROXY"
+  export HTTP_PROXY="$HTTP_PROXY"
+  export HTTPS_PROXY="$HTTPS_PROXY"
+}
+
+_unset_proxy()
+{
+  unset http_proxy
+  unset https_proxy
+  unset HTTP_PROXY
+  unset HTTPS_PROXY
+}
+
+
 fatal()
 {
   echo "ERROR: $*" >&2
@@ -16,28 +36,33 @@ _get_nodes_addresses()
 
 _install_galera_centos()
 {
-  cat <<'EOF' > /etc/yum.repos.d/mariadb.repo
+  local temp_config; temp_config="$(mktemp)"
+
+  cat <<EOF > "$temp_config"
 [mariadb]
 name = MariaDB
 baseurl = http://yum.mariadb.org/10.4/centos7-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
-  
-  yum makecache --disablerepo='*' --enablerepo='mariadb'
-  yum install -y MariaDB-server MariaDB-client
-  yum install -y rsync policycoreutils-python
-  systemctl enable --now mariadb
+  sudo mv "$temp_config" /etc/my.cnf.d/galera.conf
+  sudo -E yum makecache --disablerepo='*' --enablerepo='mariadb'
+  _set_proxy
+  sudo -E yum install -y MariaDB-server MariaDB-client
+  sudo -E yum install -y rsync policycoreutils-python
+  _unset_proxy
+  sudo -E systemctl enable --now mariadb
 }
 
 _set_galera_config()
 {
+  local temp_config; temp_config="$(mktemp)"
   local nodes; nodes="$(_get_nodes_addresses | sed 's@ @,@g')"
   local cluster_name; cluster_name="$(hostname -s | awk -F- '{print $(NF-2)}')"
   local hostname; hostname="$(hostname -s)"
   local address; address="$(ip addr sh ens192 | awk '/inet /{print $2}' | cut -d/ -f1)"
 
-  cat <<EOF > /etc/my.cnf.d/galera.cnf
+  cat <<EOF > "$temp_config"
 [mysqld]
 binlog_format=ROW
 default-storage-engine=innodb
@@ -59,11 +84,14 @@ wsrep_sst_method=rsync
 wsrep_node_address="$address"
 wsrep_node_name="$hostname"
 EOF
+
+  sudo mv "$temp_config" /etc/my.cnf.d/galera.cnf
 }
 
 main()
 {
-  #_install_galera_centos
+  _install_galera_centos
+  _set_galera_config
 }
 
 main
