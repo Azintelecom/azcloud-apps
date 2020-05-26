@@ -196,7 +196,9 @@ _start_mariadb_on_all_nodes()
 
   local nodes; nodes=($(grep "$play_id" /etc/hosts | awk '{print $NF}'))
   for node in ${nodes[@]}; do
-    _run_on_node "$node" "bash /tmp/azcloud-apps/galera/join.sh &"
+    if ! hostname -s | grep -q database1; then
+      _run_on_node "$node" "bash /tmp/azcloud-apps/databases/galera/join.sh &"
+    fi
   done
 }
 
