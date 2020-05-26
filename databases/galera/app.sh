@@ -45,13 +45,12 @@ baseurl = http://yum.mariadb.org/10.4/centos7-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
-  sudo mv "$temp_config" /etc/my.cnf.d/galera.conf
+  sudo mv "$temp_config" /etc/yum.repos.d/mariadb.repo
   sudo -E yum makecache --disablerepo='*' --enablerepo='mariadb'
   _set_proxy
-  sudo -E yum install -y MariaDB-server MariaDB-client
-  sudo -E yum install -y rsync policycoreutils-python
+  sudo -E yum install -y MariaDB-server MariaDB-client rsync policycoreutils-python
   _unset_proxy
-  sudo -E systemctl enable --now mariadb
+  sudo systemctl enable --now mariadb
 }
 
 _set_galera_config()
