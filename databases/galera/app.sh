@@ -34,6 +34,17 @@ _get_nodes_addresses()
   echo "${addresses[@]}"
 }
 
+_setup_galera_storage()
+{
+  local disks; disks=($(lsblk | grep sd[b-z] | awk '{print $1}' | sed 's@^@/dev/@g'))
+  [ -z "$disks" ] && { echo "no disk found"; return 1; }
+  sudo vgcreate galera_storage ${disks[*]}
+  sudo lvcreate -n mariadb -l 100%VG galera_storage
+  sudo mkfs.ext4 /dev/galera_storage/mariadb 
+  sudo mkdir -p /var/lib/mysql
+  sudo mount /dev/galera_storage/mariadb /var/lib/mysql
+}
+
 _install_galera_centos()
 {
   local temp_config; temp_config="$(mktemp)"
@@ -89,6 +100,7 @@ EOF
 
 main()
 {
+  _setup_galera_storage
   _install_galera_centos
   _set_galera_config
 }
