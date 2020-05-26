@@ -69,7 +69,9 @@ _install_deps()
 
 _install_avahi_centos()
 {
+  _set_proxy
   yum -y install avahi-daemon avahi-tools
+  _unset_proxy
 
   mv /etc/avahi/{avahi-daemon.conf,avahi-daemon.conf.orig}
   cat <<'EOF' > /etc/avahi/avahi-daemon.conf
