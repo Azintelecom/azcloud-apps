@@ -1,20 +1,7 @@
 #!/usr/bin/env bash
-#
-# dummy script that should install and configure
-# one single mariabd instance
-# 
 
 export HTTP_PROXY="$PROXY"
 export HTTPS_PROXY="$PROXY"
-
-_get_db_args()
-{
-  local apps_args db_pass
-  apps_args=$(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d)
-  db_pass="$(jq -r .apps.config.dbpass <<< "$apps_args")"
-  [[ $db_pass == "null" ]] && db_pass="mariadb"
-  echo "$db_pass"
-}
 
 _set_proxy()
 {
@@ -32,77 +19,91 @@ _unset_proxy()
   unset HTTPS_PROXY
 }
 
-_add_fw_rules()
+
+fatal()
 {
-  iptables -I INPUT -p tcp --dport 3306 -m comment --comment "added by AzCloudApps"
+  echo "ERROR: $*" >&2
+  exit 1
 }
 
-_selinux()
+_get_nodes_addresses()
 {
-  sed -i '/^SELINUX=/s/enforcing/permissive/g' /etc/selinux/config
-  setenforce 0
+  local addresses;
+  addresses=($(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d | jq -r .vms[].net[].address))
+  [ -z "$addresses" ] && fatal "Could not get nodes addresses"
+  echo "${addresses[@]}"
 }
 
-_install_app()
+_setup_storage_for_galera()
 {
-  _set_proxy
-  yum -y install mariadb mariadb-server expect
-  _unset_proxy
+  local disks; disks=($(lsblk | grep sd[b-z] | awk '{print $1}' | sed 's@^@/dev/@g'))
+  [ -z "${disks}" ] && { echo "no disks detected"; return 1; }
+  sudo vgcreate galera_storage ${disks[*]}
+  sudo lvcreate -l 100%VG galera_storage -n mariadb
+  sudo mkfs.ext4 /dev/galera_storage/mariadb
+  sudo mkdir -p /var/lib/mysql
+  sudo mount /dev/galera_storage/mariadb /var/lib/mysql
 }
 
-_deploy_app()
+_install_galera_centos()
 {
+  local temp_config; temp_config="$(mktemp)"
 
-  local mysql_root_password="$1"; shift
-  local mysql_curr_password=""
-
-  systemctl enable --now mariadb
-
-  secure_mysql=$(expect -c "
-set timeout 1
-spawn mysql_secure_installation
-expect \"Enter current password for root (enter for none):\"
-send \"$mysql_curr_password\r\"
-expect \"Set root password?*\"
-send \"y\r\"
-expect \"New password*\"
-send \"$mysql_root_password\r\"
-expect \"Re-enter new password*\"
-send \"$mysql_root_password\r\"
-expect \"Remove anonymous users?\"
-send \"y\r\"
-expect \"Disallow root login remotely?\"
-send \"n\r\"
-expect \"Remove test database and access to it?\"
-send \"y\r\"
-expect \"Reload privilege tables now?\"
-send \"y\r\"
-expect eof
-")
-
-echo "$secure_mysql"
-
-}
-
-_finish()
-{
-  cat <<EOF
-##################################
- AzCloudApp info:
- APP MariaDB has been installed
- DBPASS: "$1"
-##################################
+  cat <<EOF > "$temp_config"
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.4/centos7-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
 EOF
+  sudo mv "$temp_config" /etc/yum.repos.d/mariadb.repo
+  sudo -E yum makecache --disablerepo='*' --enablerepo='mariadb'
+  _set_proxy
+  sudo -E yum install -y MariaDB-server MariaDB-client rsync policycoreutils-python
+  _unset_proxy
+  sudo systemctl enable --now mariadb
+}
+
+_set_galera_config()
+{
+  local temp_config; temp_config="$(mktemp)"
+  local nodes; nodes="$(_get_nodes_addresses | sed 's@ @,@g')"
+  local cluster_name; cluster_name="$(hostname -s | awk -F- '{print $(NF-2)}')"
+  local hostname; hostname="$(hostname -s)"
+  local address; address="$(ip addr sh ens192 | awk '/inet /{print $2}' | cut -d/ -f1)"
+
+  cat <<EOF > "$temp_config"
+[mysqld]
+binlog_format=ROW
+default-storage-engine=innodb
+innodb_autoinc_lock_mode=2
+bind-address=0.0.0.0
+
+# Galera Provider Configuration
+wsrep_on=ON
+wsrep_provider=/usr/lib64/galera-4/libgalera_smm.so
+
+# Galera Cluster Configuration
+wsrep_cluster_name="$cluster_name"
+wsrep_cluster_address="gcomm://$nodes"
+
+# Galera Synchronization Configuration
+wsrep_sst_method=rsync
+
+# Galera Node Configuration
+wsrep_node_address="$address"
+wsrep_node_name="$hostname"
+EOF
+
+  sudo mv "$temp_config" /etc/my.cnf.d/galera.cnf
 }
 
 main()
 {
-  local args; args=$(_get_db_args)
-  _add_fw_rules
-  _selinux
-  _install_app
-  _deploy_app "$args"
-  _finish "$args"
+  _setup_storage_for_galera
+  #_install_galera_centos
+  #_set_galera_config
 }
 
 main
+
