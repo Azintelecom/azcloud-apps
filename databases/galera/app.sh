@@ -203,7 +203,7 @@ _start_mariadb_on_all_nodes()
 _setup_galera_cluster()
 {
   systemctl stop mariadb && _ready_to_join_cluster
-  if getent hosts | grep -q database1; then
+  if hostname -s | grep -q database1; then
     galera_new_cluster && _start_mariadb_on_all_nodes
   fi
 }
