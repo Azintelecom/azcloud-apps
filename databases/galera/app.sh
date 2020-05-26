@@ -19,7 +19,6 @@ _unset_proxy()
   unset HTTPS_PROXY
 }
 
-
 fatal()
 {
   echo "ERROR: $*" >&2
@@ -196,7 +195,7 @@ _start_mariadb_on_all_nodes()
 
   local nodes; nodes=($(grep "$play_id" /etc/hosts | awk '{print $NF}'))
   for node in ${nodes[@]}; do
-    if ! hostname -s | grep -q database1; then
+    if [ "$node" != database1 ]; then
       _run_on_node "$node" "bash /tmp/azcloud-apps/databases/galera/join.sh &"
     fi
   done
