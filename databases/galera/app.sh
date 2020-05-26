@@ -38,6 +38,7 @@ _run_on_node()
 {
   local node; node="$1"; shift
   local comm; comm="$@"
+  ssh=();ssh=(ssh)
   ssh+=(-o ControlPath=~/.ssh/cm-%r@%h:%p)
   ssh+=(-o ControlMaster=auto)
   ssh+=(-o ControlPersist=10m)
@@ -215,7 +216,7 @@ main()
   _setup_galera_storage
   _install_galera_centos
   _set_galera_config
-  #_setup_galera_cluster
+  _setup_galera_cluster
 }
 
 main
