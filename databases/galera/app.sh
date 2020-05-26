@@ -63,7 +63,7 @@ _update_host_file()
 _install_deps()
 {
   _set_proxy
-  yum -y install tmux
+  yum -y install tmux jq vim
   _unset_proxy
 }
 
@@ -218,8 +218,8 @@ _setup_galera_cluster()
 
 main()
 {
-  _update_host_file
   _install_deps
+  _update_host_file
   _install_avahi_centos
   _setup_firewall_and_selinux
   _setup_galera_storage
