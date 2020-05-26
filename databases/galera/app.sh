@@ -34,6 +34,74 @@ _get_nodes_addresses()
   echo "${addresses[@]}"
 }
 
+_run_on_node()
+{
+  local node; node="$1"; shift
+  local comm; comm="$@"
+  ssh+=(-o ControlPath=~/.ssh/cm-%r@%h:%p)
+  ssh+=(-o ControlMaster=auto)
+  ssh+=(-o ControlPersist=10m)
+  ssh+=(-o BatchMode=yes)
+  ssh+=(-o PreferredAuthentications=publickey)
+  ssh+=(-o PubkeyAuthentication=yes)
+  ssh+=(-o StrictHostKeyChecking=no)
+  ssh+=(root@"$node" -t "$comm")
+  ${ssh[@]}
+}
+
+_update_host_file()
+{
+  local nodes; nodes=($(_get_nodes_addresses))
+  local hostname
+  echo "# azcloud-apps" >> /etc/hosts
+  for node in ${nodes[@]}; do
+    hostname="$(_run_on_node "$node" hostname -s)"
+    echo "$node" "$hostname" "${hostname%%-*}" >> /etc/hosts
+  done
+}
+
+_install_avahi_centos()
+{
+  yum -y install avahi-daemon avahi-tools
+
+  mv /etc/avahi/{avahi-daemon.conf,avahi-daemon.conf.orig}
+  cat <<'EOF' > /etc/avahi/avahi-daemon.conf
+[server]
+use-ipv4=yes
+use-ipv6=no
+deny-interfaces=docker0
+ratelimit-interval-usec=1000000
+ratelimit-burst=1000
+
+[wide-area]
+enable-wide-area=yes
+
+[publish]
+publish-hinfo=no
+publish-workstation=yes
+
+[reflector]
+
+[rlimits]
+EOF
+  systemctl restart avahi-daemon
+
+  cat <<'EOF' > /etc/systemd/system/avahi-alias@.service
+[Unit]
+Description=Publish %I as alias for %H.local via mdns
+Wants=avahi-daemon.service
+
+[Service]
+Type=simple
+ExecStart=/bin/bash -c "/usr/bin/avahi-publish -a -R %I $(avahi-resolve -4 -n %H.local | cut -f 2)"
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  local short; short="$(hostname -s)"; short="${short%%-*}"
+  systemctl enable --now avahi-alias@"$short".local.service
+}
+
 _setup_firewall_and_selinux()
 {
     if systemctl is-active firewalld | grep -q active; then
@@ -45,8 +113,8 @@ _setup_firewall_and_selinux()
     elif command -v iptables >& /dev/null; then
       iptables -I INPUT -p tcp --dport 3306 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
       iptables -I INPUT -p tcp --dport 4567 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT 
+      iptables -I INPUT -p tcp --dport 4568 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
       iptables -I INPUT -p tcp --dport 4444 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
-      iptables -I INPUT -p tcp --dport 3306 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
       iptables -I INPUT -p udp --dport 4567 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
    fi
 
@@ -113,12 +181,41 @@ EOF
 
 }
 
+_ready_to_join_cluster()
+{
+  touch /tmp/azcloud-node-ready
+}
+
+_start_mariadb_on_all_nodes()
+{
+  local play_id
+  play_id="$(hostname -s)"
+  play_id="${play_id#*-}"
+  play_id="${play_id%%-*}"
+
+  local nodes; nodes=($(grep "$play_id" /etc/hosts | awk '{print $NF}'))
+  for node in ${nodes[@]}; do
+    _run_on_node "$node" "/tmp/azcloud-apps/galera/join.sh"
+  done
+}
+
+_setup_galera_cluster()
+{
+  systemctl stop mariadb && _ready_to_join_cluster
+  if getent hosts | grep -q database1; then
+    galera_new_cluster && _start_mariadb_on_all_nodes
+  fi
+}
+
 main()
 {
+  _update_host_file
+  _install_avahi_centos
   _setup_firewall_and_selinux
   _setup_galera_storage
   _install_galera_centos
   _set_galera_config
+  #_setup_galera_cluster
 }
 
 main
