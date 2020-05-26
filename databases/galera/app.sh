@@ -60,6 +60,13 @@ _update_host_file()
   done
 }
 
+_install_deps()
+{
+  _set_proxy
+  yum -y install tmux
+  _unset_proxy
+}
+
 _install_avahi_centos()
 {
   yum -y install avahi-daemon avahi-tools
@@ -196,7 +203,7 @@ _start_mariadb_on_all_nodes()
   local nodes; nodes=($(grep "$play_id" /etc/hosts | awk '{print $NF}'))
   for node in ${nodes[@]}; do
     if [ "$node" != database1 ]; then
-      _run_on_node "$node" "bash /tmp/azcloud-apps/databases/galera/join.sh &"
+      _run_on_node "$node" "tmux new-session -d 'bash /tmp/azcloud-apps/databases/galera/join.sh'"
     fi
   done
 }
@@ -212,6 +219,7 @@ _setup_galera_cluster()
 main()
 {
   _update_host_file
+  _install_deps
   _install_avahi_centos
   _setup_firewall_and_selinux
   _setup_galera_storage
