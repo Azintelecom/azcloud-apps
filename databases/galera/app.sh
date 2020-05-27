@@ -163,34 +163,9 @@ EOF
 
 _set_mariadb_password()
 {
-
   local mysql_root_password="$(_get_db_pass)"
-  local mysql_curr_password=""
-
-  secure_mysql=$(expect -c "
-set timeout 1
-spawn mysql_secure_installation
-expect \"Enter current password for root (enter for none):\"
-send \"$mysql_curr_password\r\"
-expect \"Set root password?*\"
-send \"y\r\"
-expect \"New password*\"
-send \"$mysql_root_password\r\"
-expect \"Re-enter new password*\"
-send \"$mysql_root_password\r\"
-expect \"Remove anonymous users?\"
-send \"y\r\"
-expect \"Disallow root login remotely?\"
-send \"n\r\"
-expect \"Remove test database and access to it?\"
-send \"y\r\"
-expect \"Reload privilege tables now?\"
-send \"y\r\"
-expect eof
-")
-
-echo "$secure_mysql"
-
+  mysql -u root -p' ' -e "FLUSH PRIVILEGES;
+SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$mysql_root_password');"
 }
 
 _set_galera_config()
