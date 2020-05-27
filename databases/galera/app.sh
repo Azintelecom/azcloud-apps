@@ -261,6 +261,9 @@ _get_cluster_size()
 _finish()
 {
   local nodes; nodes=($(_get_nodes))
+  if ! _is_it_first; then
+    return
+  fi
   until [ ${#nodes[*]} -ne $(_get_cluster_size) ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
   cat <<EOF
 Cluster setup finished!
