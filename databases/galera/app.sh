@@ -188,7 +188,7 @@ EOF
 
 _ready_to_join_cluster()
 {
-  touch /tmp/azcloud-node-ready
+  touch /tmp/azcloud-apps/ready
 }
 
 _start_mariadb_on_all_nodes()
@@ -201,7 +201,7 @@ _start_mariadb_on_all_nodes()
   local nodes; nodes=($(grep "$play_id" /etc/hosts | awk '{print $NF}'))
   for node in ${nodes[@]}; do
     if [ "$node" != database1 ]; then
-      _run_on_node "$node" "tmux new-session -d 'bash /tmp/azcloud-apps/databases/galera/join.sh'"
+      _run_on_node "$node" "tmux new-session -d 'bash /tmp/azcloud-apps/databases/galera/join.sh >> /tmp/azcloud-apps/join.log &'"
     fi
   done
 }

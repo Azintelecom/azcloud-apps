@@ -12,7 +12,7 @@ EOF
 
 _join_cluster()
 {
-  until [ -f /tmp/azcloud-node-ready ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
+  until [ -f /tmp/azcloud-apps/ready ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
   systemctl start mariadb
 }
 
