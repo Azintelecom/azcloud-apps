@@ -2,6 +2,8 @@
 
 export HTTP_PROXY="$PROXY"
 export HTTPS_PROXY="$PROXY"
+export http_proxy="$PROXY"
+export https_proxy="$PROXY"
 
 _set_proxy()
 {
@@ -62,16 +64,12 @@ _update_host_file()
 
 _install_deps()
 {
-  _set_proxy
   yum -y install tmux jq vim
-  _unset_proxy
 }
 
 _install_avahi_centos()
 {
-  _set_proxy
   yum -y install avahi-daemon avahi-tools
-  _unset_proxy
 
   mv /etc/avahi/{avahi-daemon.conf,avahi-daemon.conf.orig}
   cat <<'EOF' > /etc/avahi/avahi-daemon.conf
@@ -152,9 +150,7 @@ gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
   yum makecache --disablerepo='*' --enablerepo='mariadb'
-  _set_proxy
   yum install -y MariaDB-server MariaDB-client rsync policycoreutils-python
-  _unset_proxy
   systemctl enable --now mariadb
 }
 
