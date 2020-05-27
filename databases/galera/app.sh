@@ -220,6 +220,11 @@ _is_it_first()
   return $first
 }
 
+_get_nodes()
+{
+  $(grep "$play_id" /etc/hosts | awk '{print $NF}')
+}
+
 _ready_to_join_cluster()
 {
   touch /tmp/azcloud-apps/ready
@@ -229,7 +234,7 @@ _start_mariadb_on_all_nodes()
 {
   local play_id; play_id="$(_get_play_id)"
 
-  local nodes; nodes=($(grep "$play_id" /etc/hosts | awk '{print $NF}'))
+  local nodes; nodes=($(_get_nodes))
   for node in ${nodes[@]}; do
     if ! _is_it_first "$node"; then
       _run_on_node "$node" "tmux new-session -d 'bash /tmp/azcloud-apps/databases/galera/join.sh'"
@@ -245,6 +250,26 @@ _setup_galera_cluster()
   fi
 }
 
+_get_cluster_size()
+{
+  mysql -u root -p' ' -e "SHOW STATUS LIKE 'wsrep_cluster_size'" \
+    | sed 's/\t/,/g' 
+    | cut -d, -f2 
+    | tail -1
+}
+
+_finish()
+{
+  local nodes; nodes=($(_get_nodes))
+  until [ ${#nodes[*]} -ne $(_get_cluster_size) ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
+  cat <<EOF
+Cluster setup finished!
+Cluster name: $(_get_play_id)
+Cluster nodes: $(_get_cluster_size)
+Date: $(date)
+EOF
+}
+ 
 main()
 {
   _install_deps
@@ -256,6 +281,7 @@ main()
   _set_mariadb_password
   _set_galera_config
   _setup_galera_cluster
+  _finish
 }
 
 main
