@@ -186,6 +186,16 @@ EOF
 
 }
 
+_is_it_first()
+{
+  local node; node="$1"; shift
+  local first; first=1
+  if [ "${node:(-1)}" = 1 ]; then
+    first=0
+  fi
+  return $first
+}
+
 _ready_to_join_cluster()
 {
   touch /tmp/azcloud-apps/ready
@@ -200,7 +210,7 @@ _start_mariadb_on_all_nodes()
 
   local nodes; nodes=($(grep "$play_id" /etc/hosts | awk '{print $NF}'))
   for node in ${nodes[@]}; do
-    if [ "$node" != database1 ]; then
+    if ! _is_it_first "$node"; then
       _run_on_node "$node" "tmux new-session -d 'bash /tmp/azcloud-apps/databases/galera/join.sh'"
     fi
   done
@@ -209,7 +219,7 @@ _start_mariadb_on_all_nodes()
 _setup_galera_cluster()
 {
   systemctl stop mariadb && _ready_to_join_cluster
-  if hostname -s | grep -q database1; then
+  if _is_it_first "${HOSTNAME%%-*}"; then
     galera_new_cluster && _start_mariadb_on_all_nodes
   fi
 }
