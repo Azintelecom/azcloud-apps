@@ -7,12 +7,21 @@
 export HTTP_PROXY="$PROXY"
 export HTTPS_PROXY="$PROXY"
 
+_get_play_id()
+{
+  local play_id
+  play_id="$(hostname -s)"
+  play_id="${play_id#*-}"
+  play_id="${play_id%%-*}"
+  echo "$play_id"
+}
+
 _get_db_args()
 {
   local apps_args db_pass
   apps_args=$(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d)
   db_pass="$(jq -r .apps.config.dbpass <<< "$apps_args")"
-  [[ $db_pass == "null" ]] && db_pass="mariadb"
+  [[ $db_pass == "null" ]] && db_pass="$(_get_play_id)"
   echo "$db_pass"
 }
 

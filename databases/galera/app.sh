@@ -35,11 +35,21 @@ _get_nodes_addresses()
   echo "${addresses[@]}"
 }
 
+_get_play_id()
+{
+  local play_id
+  play_id="$(hostname -s)"
+  play_id="${play_id#*-}"
+  play_id="${play_id%%-*}"
+  echo "$play_id"
+}
+
 _get_db_pass()
 {
-  local pass;
-  pass="$(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d | jq -r .apps.config.dbpass)"
-  echo $pass
+  local db_pass;
+  db_pass="$(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d | jq -r .apps.config.dbpass)"
+  [[ $db_pass == "null" ]] && db_pass="$(_get_play_id)"
+  echo "$db_pass"
 }
 
 _run_on_node()
@@ -217,10 +227,7 @@ _ready_to_join_cluster()
 
 _start_mariadb_on_all_nodes()
 {
-  local play_id
-  play_id="$(hostname -s)"
-  play_id="${play_id#*-}"
-  play_id="${play_id%%-*}"
+  local play_id; play_id="$(_get_play_id)"
 
   local nodes; nodes=($(grep "$play_id" /etc/hosts | awk '{print $NF}'))
   for node in ${nodes[@]}; do
