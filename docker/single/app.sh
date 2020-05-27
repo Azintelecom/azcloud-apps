@@ -2,23 +2,8 @@
 
 export HTTP_PROXY="$PROXY"
 export HTTPS_PROXY="$PROXY"
-
-_set_proxy()
-{
-  export http_proxy="$HTTP_PROXY"
-  export https_proxy="$HTTPS_PROXY"
-  export HTTP_PROXY="$HTTP_PROXY"
-  export HTTPS_PROXY="$HTTPS_PROXY"
-}
-
-_unset_proxy()
-{
-  unset http_proxy
-  unset https_proxy
-  unset HTTP_PROXY
-  unset HTTPS_PROXY
-}
-
+export http_proxy="$PROXY"
+export https_proxy="$PROXY"
 
 fatal()
 {
@@ -38,7 +23,7 @@ _setup_docker_repo()
 
 _install_docker()
 {
-  :
+  curl -fsSL https://get.docker.com/ | sh
 }
 
 main()
