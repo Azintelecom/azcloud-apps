@@ -35,6 +35,13 @@ _get_nodes_addresses()
   echo "${addresses[@]}"
 }
 
+_get_db_pass()
+{
+  local pass;
+  pass="$(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d | jq -r .apps.config.dbpass)"
+  echo $pass
+}
+
 _run_on_node()
 {
   local node; node="$1"; shift
@@ -154,6 +161,38 @@ EOF
   systemctl enable --now mariadb
 }
 
+_set_mariadb_password()
+{
+
+  local mysql_root_password="$(_get_db_pass)"
+  local mysql_curr_password=""
+
+  secure_mysql=$(expect -c "
+set timeout 1
+spawn mysql_secure_installation
+expect \"Enter current password for root (enter for none):\"
+send \"$mysql_curr_password\r\"
+expect \"Set root password?*\"
+send \"y\r\"
+expect \"New password*\"
+send \"$mysql_root_password\r\"
+expect \"Re-enter new password*\"
+send \"$mysql_root_password\r\"
+expect \"Remove anonymous users?\"
+send \"y\r\"
+expect \"Disallow root login remotely?\"
+send \"n\r\"
+expect \"Remove test database and access to it?\"
+send \"y\r\"
+expect \"Reload privilege tables now?\"
+send \"y\r\"
+expect eof
+")
+
+echo "$secure_mysql"
+
+}
+
 _set_galera_config()
 {
   local nodes; nodes="$(_get_nodes_addresses | sed 's@ @,@g')"
@@ -232,6 +271,7 @@ main()
   _setup_firewall_and_selinux
   _setup_galera_storage
   _install_galera_centos
+  _set_mariadb_password
   _set_galera_config
   _setup_galera_cluster
 }
