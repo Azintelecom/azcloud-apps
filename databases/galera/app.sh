@@ -185,8 +185,8 @@ _tune_mariadb_systemd()
   fi
   cat <<'EOF' > /etc/systemd/system/mariadb.service.d/limits.conf
 [Service]
-LimitNOFILE=infinity
-LimitMEMLOCK=infinity
+LimitNOFILE=65535  # can be increased to 1024000
+LimitMEMLOCK=65535 # can be increased to 1024000
 EOF
 }
 
@@ -206,6 +206,7 @@ bind-address=0.0.0.0
 ignore-db-dir=lost+found
 max_connections=1024
 max_allowed_packet=536870912 # half of max
+open_files_limit=65536 # can be increased to 1024000
 
 # Galera Provider Configuration
 wsrep_on=ON
