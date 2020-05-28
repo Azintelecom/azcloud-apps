@@ -183,10 +183,10 @@ _tune_mariadb_systemd()
   if [ ! -d /etc/systemd/system/mariadb.service.d ]; then
     mkdir -p /etc/systemd/system/mariadb.service.d
   fi
-  cat <<'EOF' > /etc/systemd/system/mariadb.service.d/limits.conf
+  cat <<'EOF' > /etc/systemd/system/mariadb.service.d/override.conf
 [Service]
-LimitNOFILE=65535  # can be increased to 1024000
-LimitMEMLOCK=65535 # can be increased to 1024000
+LimitNOFILE=65535
+LimitMEMLOCK=65535
 EOF
 }
 
