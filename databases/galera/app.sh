@@ -188,6 +188,7 @@ _tune_mariadb_systemd()
 LimitNOFILE=65535
 LimitMEMLOCK=65535
 EOF
+  systemctl daemon-reload
 }
 
 _set_galera_config()
@@ -300,8 +301,8 @@ main()
   _setup_firewall_and_selinux
   _setup_galera_storage
   _install_galera_centos
-  _set_mariadb_password
   _tune_mariadb_systemd
+  _set_mariadb_password
   _set_galera_config
   _setup_galera_cluster
   _finish
