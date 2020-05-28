@@ -265,12 +265,14 @@ _finish()
   if ! _is_it_first "${HOSTNAME%%-*}"; then
     return
   fi
-  until [ ${#nodes[*]} -ne $(_get_cluster_size) ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
+  until [ ${#nodes[*]} -eq $(_get_cluster_size) ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
   cat <<EOF
-Cluster setup finished!
-Cluster name: $(_get_play_id)
-Cluster nodes: $(_get_cluster_size)
-Date: $(date)
++-------------------------------------+
+  Cluster setup finished!
+  Cluster name: $(_get_play_id)
+  Cluster nodes: $(_get_cluster_size)
+  Date: $(date)
++-------------------------------------+
 EOF
 }
  
