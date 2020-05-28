@@ -178,6 +178,18 @@ _set_mariadb_password()
 SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$mysql_root_password');"
 }
 
+_tune_mariadb_systemd()
+{
+  if [ ! -d /etc/systemd/system/mysqld.service.d ]; then
+    mkdir -p /etc/systemd/system/mysqld.service.d
+  fi
+  cat <<'EOF' > /etc/systemd/system/mysqld.service.d/limits.conf
+[Service]
+LimitNOFILE=infinity
+LimitMEMLOCK=infinity
+EOF
+}
+
 _set_galera_config()
 {
   local nodes; nodes="$(_get_nodes_addresses | sed 's@ @,@g')"
@@ -192,6 +204,8 @@ default-storage-engine=innodb
 innodb_autoinc_lock_mode=2
 bind-address=0.0.0.0
 ignore-db-dir=lost+found
+max_connections=1024
+max_allowed_packet=536870912 # half of max
 
 # Galera Provider Configuration
 wsrep_on=ON
@@ -286,6 +300,7 @@ main()
   _setup_galera_storage
   _install_galera_centos
   _set_mariadb_password
+  _tune_mariadb_systemd
   _set_galera_config
   _setup_galera_cluster
   _finish
