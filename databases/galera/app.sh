@@ -191,6 +191,7 @@ binlog_format=ROW
 default-storage-engine=innodb
 innodb_autoinc_lock_mode=2
 bind-address=0.0.0.0
+ignore-db-dir=lost+found
 
 # Galera Provider Configuration
 wsrep_on=ON
