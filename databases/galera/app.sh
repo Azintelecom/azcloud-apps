@@ -180,10 +180,10 @@ SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$mysql_root_password');"
 
 _tune_mariadb_systemd()
 {
-  if [ ! -d /etc/systemd/system/mysqld.service.d ]; then
-    mkdir -p /etc/systemd/system/mysqld.service.d
+  if [ ! -d /etc/systemd/system/mariadb.service.d ]; then
+    mkdir -p /etc/systemd/system/mariadb.service.d
   fi
-  cat <<'EOF' > /etc/systemd/system/mysqld.service.d/limits.conf
+  cat <<'EOF' > /etc/systemd/system/mariadb.service.d/limits.conf
 [Service]
 LimitNOFILE=infinity
 LimitMEMLOCK=infinity
