@@ -222,7 +222,8 @@ _is_it_first()
 
 _get_nodes()
 {
-  $(grep "$play_id" /etc/hosts | awk '{print $NF}')
+  local play_id; play_id="$(_get_play_id)"
+  grep "$play_id" /etc/hosts | awk '{print $NF}'
 }
 
 _ready_to_join_cluster()
@@ -253,15 +254,15 @@ _setup_galera_cluster()
 _get_cluster_size()
 {
   mysql -u root -p' ' -e "SHOW STATUS LIKE 'wsrep_cluster_size'" \
-    | sed 's/\t/,/g' 
-    | cut -d, -f2 
+    | sed 's/\t/,/g' \
+    | cut -d, -f2 \
     | tail -1
 }
 
 _finish()
 {
   local nodes; nodes=($(_get_nodes))
-  if ! _is_it_first; then
+  if ! _is_it_first "${HOSTNAME%%-*}"; then
     return
   fi
   until [ ${#nodes[*]} -ne $(_get_cluster_size) ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
