@@ -113,7 +113,7 @@ _update_host_file()
 
 _install_avahi_centos()
 {
-  yum -y install avahi-daemon avahi-tools
+  yum -y install avahi avahi-tools
 
   mv /etc/avahi/{avahi-daemon.conf,avahi-daemon.conf.orig}
   cat <<'EOF' > /etc/avahi/avahi-daemon.conf
@@ -159,7 +159,7 @@ EOF
 _is_it_haproxy()
 {
   local node; node="$1"; shift
-  node=$(_node_to_address "$node")
+  node="${node%%-*}"; node=$(_node_to_address "$node")
   local haproxy_address; haproxy_address="$(_get_haproxy_address)"
   local haproxy; haproxy=1
   if [ "$haproxy_address" == "$node" ]; then
