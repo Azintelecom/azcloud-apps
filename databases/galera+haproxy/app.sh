@@ -68,7 +68,7 @@ _node_to_address()
 {
   local node; node="$1"; shift
   local play_id; play_id="$(_get_play_id)"
-  grep "$node[0-9]-$play_id" /etc/hosts | awk '{print 1}'
+  grep "$node-$play_id" /etc/hosts | awk '{print 1}'
 }
 
 _get_db_pass()
