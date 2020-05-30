@@ -160,7 +160,7 @@ _is_it_haproxy()
 {
   local node; node="$1"; shift
   node=$(_node_to_address "$node")
-  local haproxy_address; haproxy_adderss="$(_get_haproxy_address)"
+  local haproxy_address; haproxy_address="$(_get_haproxy_address)"
   local haproxy; haproxy=1
   if [ "$haproxy_address" == "$node" ]; then
     haproxy=0
@@ -170,7 +170,7 @@ _is_it_haproxy()
 
 _am_i_haproxy()
 {
-  _is_it_haproxy "$HOSTNAME"
+  _is_it_haproxy "$(hostname -s)"
 }
  
 _install_and_setup_haproxy()
@@ -384,7 +384,7 @@ EOF
 
 
 ## Main part starts here
-genearal_prepare_nodes()
+general_prepare_nodes()
 {
   _install_deps
   _update_host_file
