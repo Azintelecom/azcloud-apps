@@ -35,6 +35,14 @@ _get_nodes_addresses()
   echo "${addresses[@]}"
 }
 
+_get_haproxy_address()
+{
+  local address
+  address="$(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d | jq -r .apps.config.haproxy)"
+  [ -z "$address" ] && fatal "Could not get haproxy address"
+  echo "$address"
+}
+
 _get_play_id()
 {
   local play_id
@@ -54,6 +62,13 @@ _get_nodes_ips()
 {
   local play_id; play_id="$(_get_play_id)"
   grep "$play_id" /etc/hosts | awk '{print $3,$1}'
+}
+
+_node_to_address()
+{
+  local node; node="$1"; shift
+  local play_id; play_id="$(_get_play_id)"
+  grep "$node[0-9]-$play_id" /etc/hosts | awk '{print 1}'
 }
 
 _get_db_pass()
@@ -80,6 +95,11 @@ _run_on_node()
   ${ssh[@]}
 }
 
+_install_deps()
+{
+  yum -y install tmux jq vim
+}
+
 _update_host_file()
 {
   local nodes; nodes=($(_get_nodes_addresses))
@@ -89,46 +109,6 @@ _update_host_file()
     hostname="$(_run_on_node "$node" hostname -s)"
     echo "$node" "$hostname" "${hostname%%-*}" >> /etc/hosts
   done
-}
-
-_install_and_setup_haproxy()
-{
-  local my_address; my_address="$(hostname -i)"
-  yum -y install haproxy keepalived
-  mv /etc/haproxy/{haproxy.cfg,haproxy.cfg.orig}
-  cat <<EOF > /etc/haproxy/haproxy.cfg
-global
-    log 127.0.0.1 local0 notice
-    user haproxy
-    group haproxy
-
-defaults
-    log global
-    retries 2
-    timeout connect 3000
-    timeout server 5000
-    timeout client 5000
-
-listen galera-cluster
-    bind $my_address:3306
-    mode tcp
-    option mysql-check user haproxy_check
-    balance roundrobin
-EOF
-  IFS=$'\n'
-  for node in $(_get_nodes_ips); do
-    if [ "${node##* }" != "${my_address}" ]; then
-      cat <<EOF >> /etc/haproxy/haproxy.cfg
-    server ${node%% *} ${node##* }:3306 check
-EOF
-    fi
-  done
-  systemctl start haproxy
-}
-
-_install_deps()
-{
-  yum -y install tmux jq vim
 }
 
 _install_avahi_centos()
@@ -173,7 +153,67 @@ EOF
   systemctl enable --now avahi-alias@"$short".local.service
 }
 
-_setup_firewall_and_selinux()
+
+## HAProxy setup begins here
+
+_is_it_haproxy()
+{
+  local node; node="$1"; shift
+  node=$(_node_to_address "$node")
+  local haproxy_address; haproxy_adderss="$(_get_haproxy_address)"
+  local haproxy; haproxy=1
+  if [ "$haproxy_address" == "$node" ]; then
+    haproxy=0
+  fi
+  return $haproxy
+}
+
+_am_i_haproxy()
+{
+  _is_it_haproxy "$HOSTNAME"
+}
+ 
+_install_and_setup_haproxy()
+{
+  local my_address; my_address="$(hostname -i)"
+  yum -y install haproxy keepalived
+  mv /etc/haproxy/{haproxy.cfg,haproxy.cfg.orig}
+  cat <<EOF > /etc/haproxy/haproxy.cfg
+global
+    log 127.0.0.1 local0 notice
+    user haproxy
+    group haproxy
+
+defaults
+    log global
+    retries 2
+    timeout connect 3000
+    timeout server 5000
+    timeout client 5000
+
+listen galera-cluster
+    bind $my_address:3306
+    mode tcp
+    option mysql-check user haproxy_check
+    balance roundrobin
+EOF
+  IFS=$'\n'
+  for node in $(_get_nodes_ips); do
+    if [ "${node##* }" != "${my_address}" ]; then
+      cat <<EOF >> /etc/haproxy/haproxy.cfg
+    server ${node%% *} ${node##* }:3306 check
+EOF
+    fi
+  done
+
+  semanage permissive -a haproxy_t
+  systemctl start haproxy
+}
+
+## HAProxy setup ends here
+
+## Galera setup starts here
+_setup_firewall_and_selinux_galera()
 {
     if systemctl is-active firewalld | grep -q active; then
       firewall-cmd --permanent --zone=public --add-port=3306/tcp
@@ -191,7 +231,6 @@ _setup_firewall_and_selinux()
 
    # set domain to permissive mode
    semanage permissive -a mysqld_t
-   semanage permissive -a haproxy_t
 }
 
 _setup_galera_storage()
@@ -219,28 +258,16 @@ EOF
   systemctl enable --now mariadb
 }
 
-#_set_mariadb_password_and_haproxy_user()
-#{
-#  local mysql_root_password="$(_get_db_pass)"
-#  local subnet; subnet="$(hostname -i)"; submet="${subnet%.*}"
-#  local play_id; play_id="$(_get_play_id)"
-#  mysql -u root -p' ' -e "FLUSH PRIVILEGES;
-#USE mysql;
-#INSERT INTO user (HOST, USER) VALUES('${subnet}.%','haproxy_user');
-#FLUSH PRIVILEGES;
-#GRANT ALL PRIVILEGES ON *.* TO 'haproxy_root'@'${subnet}.%' IDENTIFIED BY '${play_id}' WITH GRANT OPTION;
-#FLUSH PRIVILEGES;
-#SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${mysql_root_password}');
-#FLUSH PRIVILEGES;"
-#}
-
-_set_mariadb_password_and_haproxy_user()
+_set_mariadb_password_and_haproxy_check()
 {
   local mysql_root_password="$(_get_db_pass)"
-  local subnet; subnet="$(hostname -i)"; submet="${subnet%.*}"
+  local subnet; subnet="$(hostname -i)"; subnet="${subnet%.*}"
   local play_id; play_id="$(_get_play_id)"
   mysql -u root -p' ' -e "FLUSH PRIVILEGES;
 SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${mysql_root_password}');
+CREATE USER 'haproxy_check'@'${subnet}.%';
+CREATE USER 'haproxy_root'@'${subnet}.%' IDENTIFIED BY '$play_id';
+GRANT ALL PRIVILEGES ON *.* TO 'haproxy_root'@'${subnet}%';
 FLUSH PRIVILEGES;"
 }
 
@@ -314,7 +341,7 @@ _start_mariadb_on_all_nodes()
 
   local nodes; nodes=($(_get_nodes))
   for node in ${nodes[@]}; do
-    if ! _is_it_first "$node"; then
+    if ! _is_it_first "$node" || ! _is_it_haproxy "$node"; then
       _run_on_node "$node" "tmux new-session -d 'bash /tmp/azcloud-apps/databases/galera/join.sh'"
     fi
   done
@@ -352,13 +379,26 @@ _finish()
 +-------------------------------------+
 EOF
 }
- 
-main()
+
+## Galera setup ends here
+
+
+## Main part starts here
+genearal_prepare_nodes()
 {
   _install_deps
   _update_host_file
   _install_avahi_centos
-  _setup_firewall_and_selinux
+}
+
+setup_haproxy_node()
+{
+  _install_and_setup_haproxy
+}
+
+setup_galera_nodes()
+{
+  _setup_firewall_and_selinux_galera
   _setup_galera_storage
   _install_galera_centos
   _install_and_setup_haproxy
@@ -367,6 +407,16 @@ main()
   _set_galera_config
   _setup_galera_cluster
   _finish
+}
+
+main()
+{
+  general_prepare_nodes
+  if _am_i_haproxy; then
+    setup_galera_nodes
+  else
+    setup_haproxy_node
+  fi
 }
 
 main
