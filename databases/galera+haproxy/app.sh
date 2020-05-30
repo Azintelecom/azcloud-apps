@@ -413,9 +413,9 @@ main()
 {
   general_prepare_nodes
   if _am_i_haproxy; then
-    setup_galera_nodes
-  else
     setup_haproxy_node
+  else
+    setup_galera_nodes
   fi
 }
 
