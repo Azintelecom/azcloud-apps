@@ -219,11 +219,29 @@ EOF
   systemctl enable --now mariadb
 }
 
+#_set_mariadb_password_and_haproxy_user()
+#{
+#  local mysql_root_password="$(_get_db_pass)"
+#  local subnet; subnet="$(hostname -i)"; submet="${subnet%.*}"
+#  local play_id; play_id="$(_get_play_id)"
+#  mysql -u root -p' ' -e "FLUSH PRIVILEGES;
+#USE mysql;
+#INSERT INTO user (HOST, USER) VALUES('${subnet}.%','haproxy_user');
+#FLUSH PRIVILEGES;
+#GRANT ALL PRIVILEGES ON *.* TO 'haproxy_root'@'${subnet}.%' IDENTIFIED BY '${play_id}' WITH GRANT OPTION;
+#FLUSH PRIVILEGES;
+#SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${mysql_root_password}');
+#FLUSH PRIVILEGES;"
+#}
+
 _set_mariadb_password_and_haproxy_user()
 {
   local mysql_root_password="$(_get_db_pass)"
+  local subnet; subnet="$(hostname -i)"; submet="${subnet%.*}"
+  local play_id; play_id="$(_get_play_id)"
   mysql -u root -p' ' -e "FLUSH PRIVILEGES;
-SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$mysql_root_password');"
+SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${mysql_root_password}');
+FLUSH PRIVILEGES;"
 }
 
 _tune_mariadb_systemd()
@@ -345,11 +363,10 @@ main()
   _install_galera_centos
   _install_and_setup_haproxy
   _tune_mariadb_systemd
-  _set_mariadb_password
+  _set_mariadb_password_and_haproxy_user
   _set_galera_config
   _setup_galera_cluster
   _finish
 }
 
 main
-
