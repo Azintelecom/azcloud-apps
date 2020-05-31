@@ -258,7 +258,7 @@ EOF
   systemctl enable --now mariadb
 }
 
-_set_mariadb_password_and_haproxy_check()
+_set_mariadb_password_and_haproxy_user()
 {
   local mysql_root_password="$(_get_db_pass)"
   local subnet; subnet="$(hostname -i)"; subnet="${subnet%.*}"
@@ -341,10 +341,10 @@ _start_mariadb_on_all_nodes()
 
   local nodes; nodes=($(_get_nodes))
   for node in ${nodes[@]}; do
-    if ! _is_it_first "$node" || ! _is_it_haproxy "$node"; then
+    if ! _is_it_first "$node" && ! _is_it_haproxy "$node"; then
       _run_on_node "$node" "tmux new-session -d \
-        'until [ -f /tmp/azcloud-apps/databases/galera/join.sh ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
-         bash /tmp/azcloud-apps/databases/galera/join.sh'"
+        'until [ -f /tmp/azcloud-apps/databases/galera+haproxy/join.sh ] || [ $((++_c)) -gt 120 ]; do sleep 5; done;
+         bash /tmp/azcloud-apps/databases/galera+haproxy/join.sh'"
     fi
   done
 }
@@ -403,7 +403,6 @@ setup_galera_nodes()
   _setup_firewall_and_selinux_galera
   _setup_galera_storage
   _install_galera_centos
-  _install_and_setup_haproxy
   _tune_mariadb_systemd
   _set_mariadb_password_and_haproxy_user
   _set_galera_config
