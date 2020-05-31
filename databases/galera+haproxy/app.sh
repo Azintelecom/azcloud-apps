@@ -367,7 +367,7 @@ _get_cluster_size()
 
 _finish()
 {
-  local nodes; nodes=($(_get_nodes)); nodes="${nodes[@]:1}"
+  local nodes; nodes=($(_get_nodes)); nodes=(${nodes[@]:1})
   if ! _is_it_first "${HOSTNAME%%-*}"; then
     return
   fi
