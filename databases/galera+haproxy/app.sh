@@ -206,8 +206,17 @@ EOF
     fi
   done
 
-  semanage permissive -a haproxy_t
   systemctl start haproxy
+}
+
+_setup_firewall_and_selinux_haproxy()
+{
+  if systemctl is-active firewalld | grep -q active; then
+    firewall-cmd --permanent --zone=public --add-port=3306/tcp
+  elif command -v iptables >& /dev/null; then
+    iptables -I INPUT -p tcp --dport 3306 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
+  fi
+  semanage permissive -a haproxy_t
 }
 
 ## HAProxy setup ends here
@@ -215,18 +224,18 @@ EOF
 ## Galera setup starts here
 _setup_firewall_and_selinux_galera()
 {
-    if systemctl is-active firewalld | grep -q active; then
-      firewall-cmd --permanent --zone=public --add-port=3306/tcp
-      firewall-cmd --permanent --zone=public --add-port=4567/tcp
-      firewall-cmd --permanent --zone=public --add-port=4568/tcp
-      firewall-cmd --permanent --zone=public --add-port=4444/tcp
-      firewall-cmd --permanent --zone=public --add-port=4567/udp
-    elif command -v iptables >& /dev/null; then
-      iptables -I INPUT -p tcp --dport 3306 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
-      iptables -I INPUT -p tcp --dport 4567 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT 
-      iptables -I INPUT -p tcp --dport 4568 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
-      iptables -I INPUT -p tcp --dport 4444 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
-      iptables -I INPUT -p udp --dport 4567 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
+  if systemctl is-active firewalld | grep -q active; then
+    firewall-cmd --permanent --zone=public --add-port=3306/tcp
+    firewall-cmd --permanent --zone=public --add-port=4567/tcp
+    firewall-cmd --permanent --zone=public --add-port=4568/tcp
+    firewall-cmd --permanent --zone=public --add-port=4444/tcp
+    firewall-cmd --permanent --zone=public --add-port=4567/udp
+  elif command -v iptables >& /dev/null; then
+    iptables -I INPUT -p tcp --dport 3306 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
+    iptables -I INPUT -p tcp --dport 4567 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT 
+    iptables -I INPUT -p tcp --dport 4568 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
+    iptables -I INPUT -p tcp --dport 4444 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
+    iptables -I INPUT -p udp --dport 4567 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
    fi
 
    # set domain to permissive mode
@@ -395,6 +404,7 @@ general_prepare_nodes()
 
 setup_haproxy_node()
 {
+  _setup_firewall_and_selinux_haproxy
   _install_and_setup_haproxy
 }
 
