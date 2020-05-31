@@ -296,7 +296,7 @@ _set_galera_config()
 binlog_format=ROW
 default-storage-engine=innodb
 innodb_autoinc_lock_mode=2
-bind-address=127.0.0.1
+bind-address=0.0.0.0
 ignore-db-dir=lost+found
 max_connections=1024
 max_allowed_packet=536870912 # half of max
