@@ -254,8 +254,10 @@ _start_mariadb_on_all_nodes()
 
   local nodes; nodes=($(_get_nodes))
   for node in ${nodes[@]}; do
-    if ! _is_it_first "$node"; then
-      _run_on_node "$node" "tmux new-session -d 'bash /tmp/azcloud-apps/databases/galera/join.sh'"
+   if ! _is_it_first "$node"; then
+      _run_on_node "$node" "tmux new-session -d \
+        'until [ -f /tmp/azcloud-apps/databases/galera/join.sh ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
+         bash /tmp/azcloud-apps/databases/galera/join.sh'"
     fi
   done
 }
