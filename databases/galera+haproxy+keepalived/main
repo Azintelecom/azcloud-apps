@@ -9,7 +9,11 @@ general_prepare_nodes()
 
 setup_keepalived_node()
 {
-  _install_and_setup_keepalived
+  if _am_i_haproxy_master; then
+    _install_and_setup_keepalived_master
+  else
+    _install_and_setup_keepalived_backup
+  fi
 }
 
 setup_haproxy_node()

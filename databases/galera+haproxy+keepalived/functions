@@ -30,14 +30,6 @@ _get_nodes_addresses()
   echo "${addresses[@]}"
 }
 
-_get_haproxy_address()
-{
-  local address
-  address="$(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d | jq -r .apps.config.haproxy)"
-  [ -z "$address" ] && fatal "Could not get haproxy address"
-  echo "$address"
-}
-
 _get_play_id()
 {
   local play_id

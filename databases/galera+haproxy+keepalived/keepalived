@@ -2,16 +2,54 @@
 
 _get_keepalived_address()
 {
-  :
+  local address
+  address="$(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d | jq -r .apps.config.keepalived)"
+  [ -z "$address" ] && fatal "Could not get haproxy address"
+  echo "${address}"
 }
 
 _install_and_setup_keepalived()
 {
+  local state; state="$1"; shift
+  local id; id="$1"; shift
+  local priority; priority="$1"; shift
+
+  local play_id; play_id="$(_get_play_id)"
+  local keepalived_address; keepalived_address="$(_get_keepalived_address)"
+
+  cat <<'EOF' > /etc/sysctl.d/99-keepalived.conf
+net.ipv4.ip_forward = 1
+net.ipv4.ip_nonlocal_bind = 1
+EOF
+
   local keepalived_address; keepalived_address="$(_get_keepalived_address)"
   yum -y install keepalived
   mv /etc/keepalived/{keepalived.conf,keepalived.conf.orig}
-  cat <<EOF > /etc/keepalived/keepalived.conf
-  CONFIG GOES HERE
+  cat <<EOF> /etc/keepalived/keepalived.conf
+vrrp_instance azcloud_apps {
+    state $state
+    interface ens192
+    virtual_router_id $id
+    priority $priority
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass $play_id
+    }
+    virtual_ipaddress {
+        $keeplived_adderss dev ens192 label ens192:vip
+    }
+}
 EOF
+}
+
+_install_and_setup_keepalived_master()
+{
+  _install_and_setup_keepalived MASTER 10 100
+}
+
+_install_and_setup_keepalived_backup()
+{
+  _install_and_setup_keepalived BACKUP 11 110 
 }
 
