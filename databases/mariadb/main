@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+main()
+{
+  export HTTP_PROXY="$PROXY"
+  export HTTPS_PROXY="$PROXY"
+
+  local args; args=$(_get_db_args)
+  _setup_firewall_and_selinux
+  _install_and_setup_mariadb "$args"
+  _finish "$args"
+}
+
+main

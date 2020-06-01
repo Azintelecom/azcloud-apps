@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+_install_deps()
+{
+  yum -y install tmux jq vim
+}
+
+_install_avahi_centos()
+{
+  yum -y install avahi-daemon avahi-tools
+
+  mv /etc/avahi/{avahi-daemon.conf,avahi-daemon.conf.orig}
+  cat <<'EOF' > /etc/avahi/avahi-daemon.conf
+[server]
+use-ipv4=yes
+use-ipv6=no
+deny-interfaces=docker0
+ratelimit-interval-usec=1000000
+ratelimit-burst=1000
+
+[wide-area]
+enable-wide-area=yes
+
+[publish]
+publish-hinfo=no
+publish-workstation=yes
+
+[reflector]
+
+[rlimits]
+EOF
+  systemctl restart avahi-daemon
+
+  cat <<'EOF' > /etc/systemd/system/avahi-alias@.service
+[Unit]
+Description=Publish %I as alias for %H.local via mdns
+Wants=avahi-daemon.service
+
+[Service]
+Type=simple
+ExecStart=/bin/bash -c "/usr/bin/avahi-publish -a -R %I $(avahi-resolve -4 -n %H.local | cut -f 2)"
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  local short; short="$(hostname -s)"; short="${short%%-*}"
+  systemctl enable --now avahi-alias@"$short".local.service
+}
+
+

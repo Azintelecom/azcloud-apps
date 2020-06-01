@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+_get_keepalived_address()
+{
+  :
+}
+
+_install_and_setup_keepalived()
+{
+  local keepalived_address; keepalived_address="$(_get_keepalived_address)"
+  yum -y install keepalived
+  mv /etc/keepalived/{keepalived.conf,keepalived.conf.orig}
+  cat <<EOF > /etc/keepalived/keepalived.conf
+  CONFIG GOES HERE
+EOF
+}
+

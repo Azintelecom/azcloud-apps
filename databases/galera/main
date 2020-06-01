@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+main()
+{
+  export HTTP_PROXY="$PROXY"
+  export HTTPS_PROXY="$PROXY"
+  export http_proxy="$PROXY"
+  export https_proxy="$PROXY"
+
+  _install_deps
+  _update_host_file
+  _install_avahi_centos
+  _setup_firewall_and_selinux
+  _setup_galera_storage
+  _install_galera_centos
+  _tune_mariadb_systemd
+  _set_mariadb_password
+  _set_galera_config
+  _setup_galera_cluster
+  _finish
+}
+
+main
+

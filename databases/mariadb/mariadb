@@ -1,66 +1,16 @@
 #!/usr/bin/env bash
-#
-# dummy script that should install and configure
-# one single mariabd instance
-# 
 
-export HTTP_PROXY="$PROXY"
-export HTTPS_PROXY="$PROXY"
-
-_get_play_id()
+_setup_firewall_and_selinux()
 {
-  local play_id
-  play_id="$(hostname -s)"
-  play_id="${play_id#*-}"
-  play_id="${play_id%%-*}"
-  echo "$play_id"
-}
-
-_get_db_args()
-{
-  local apps_args db_pass
-  apps_args=$(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d)
-  db_pass="$(jq -r .apps.config.dbpass <<< "$apps_args")"
-  [[ $db_pass == "null" ]] && db_pass="$(_get_play_id)"
-  echo "$db_pass"
-}
-
-_set_proxy()
-{
-  export http_proxy="$HTTP_PROXY"
-  export https_proxy="$HTTPS_PROXY"
-  export HTTP_PROXY="$HTTP_PROXY"
-  export HTTPS_PROXY="$HTTPS_PROXY"
-}
-
-_unset_proxy()
-{
-  unset http_proxy
-  unset https_proxy
-  unset HTTP_PROXY
-  unset HTTPS_PROXY
-}
-
-_add_fw_rules()
-{
+  
   iptables -I INPUT -p tcp --dport 3306 -m comment --comment "added by AzCloudApps"
-}
-
-_selinux()
-{
   sed -i '/^SELINUX=/s/enforcing/permissive/g' /etc/selinux/config
   setenforce 0
 }
 
-_install_app()
+_install_and_setup_mariadb()
 {
-  _set_proxy
   yum -y install mariadb mariadb-server expect
-  _unset_proxy
-}
-
-_deploy_app()
-{
 
   local mysql_root_password="$1"; shift
   local mysql_curr_password=""
@@ -90,7 +40,6 @@ expect eof
 ")
 
 echo "$secure_mysql"
-
 }
 
 _finish()
@@ -103,15 +52,3 @@ _finish()
 ##################################
 EOF
 }
-
-main()
-{
-  local args; args=$(_get_db_args)
-  _add_fw_rules
-  _selinux
-  _install_app
-  _deploy_app "$args"
-  _finish "$args"
-}
-
-main

@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+_is_it_haproxy()
+{
+  local node; node="$1"; shift
+  node="${node%%-*}"; node=$(_node_to_address "$node")
+  local haproxy_address; haproxy_address="$(_get_haproxy_address)"
+  local haproxy; haproxy=1
+  if [ "$haproxy_address" == "$node" ]; then
+    haproxy=0
+  fi
+  return $haproxy
+}
+
+_am_i_haproxy()
+{
+  _is_it_haproxy "$(hostname -s)"
+}
+ 
+_install_and_setup_haproxy()
+{
+  local my_address; my_address="$(hostname -i)"
+  yum -y install haproxy keepalived
+  mv /etc/haproxy/{haproxy.cfg,haproxy.cfg.orig}
+  cat <<EOF > /etc/haproxy/haproxy.cfg
+global
+    log 127.0.0.1 local0 notice
+    user haproxy
+    group haproxy
+
+defaults
+    log global
+    retries 2
+    timeout connect 3000
+    timeout server 5000
+    timeout client 5000
+
+listen galera-cluster
+    bind $my_address:3306
+    mode tcp
+    option mysql-check user haproxy_check
+    balance roundrobin
+EOF
+  IFS=$'\n'
+  for node in $(_get_nodes_ips); do
+    if [ "${node##* }" != "${my_address}" ]; then
+      cat <<EOF >> /etc/haproxy/haproxy.cfg
+    server ${node%% *} ${node##* }:3306 check
+EOF
+    fi
+  done
+
+  systemctl start haproxy
+}
+
+_setup_firewall_and_selinux_haproxy()
+{
+  if systemctl is-active firewalld | grep -q active; then
+    firewall-cmd --permanent --zone=public --add-port=3306/tcp
+  elif command -v iptables >& /dev/null; then
+    iptables -I INPUT -p tcp --dport 3306 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
+  fi
+  semanage permissive -a haproxy_t
+}
+
+

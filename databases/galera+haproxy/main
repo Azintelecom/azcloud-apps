@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+general_prepare_nodes()
+{
+  _install_deps
+  _update_host_file
+  _install_avahi_centos
+}
+
+setup_haproxy_node()
+{
+  _setup_firewall_and_selinux_haproxy
+  _install_and_setup_haproxy
+}
+
+setup_galera_nodes()
+{
+  _setup_firewall_and_selinux_galera
+  _setup_galera_storage
+  _install_galera_centos
+  _tune_mariadb_systemd
+  _set_mariadb_password_and_haproxy_user
+  _set_galera_config
+  _setup_galera_cluster
+  _finish
+}
+
+main()
+{
+  export HTTP_PROXY="$PROXY"
+  export HTTPS_PROXY="$PROXY"
+  export http_proxy="$PROXY"
+  export https_proxy="$PROXY"
+
+  general_prepare_nodes
+  if _am_i_haproxy; then
+    setup_haproxy_node
+  else
+    setup_galera_nodes
+  fi
+}
+
+main

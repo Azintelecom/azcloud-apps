@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+
+_set_proxy()
+{
+  export http_proxy="$HTTP_PROXY"
+  export https_proxy="$HTTPS_PROXY"
+  export HTTP_PROXY="$HTTP_PROXY"
+  export HTTPS_PROXY="$HTTPS_PROXY"
+}
+
+_unset_proxy()
+{
+  unset http_proxy
+  unset https_proxy
+  unset HTTP_PROXY
+  unset HTTPS_PROXY
+}
+
+fatal()
+{
+  echo "ERROR: $*" >&2
+  exit 1
+}
+
+_get_nodes_addresses()
+{
+  local addresses;
+  addresses=($(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d | jq -r .vms[].net[].address))
+  [ -z "$addresses" ] && fatal "Could not get nodes addresses"
+  echo "${addresses[@]}"
+}
+
+_get_haproxy_address()
+{
+  local address
+  address="$(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d | jq -r .apps.config.haproxy)"
+  [ -z "$address" ] && fatal "Could not get haproxy address"
+  echo "$address"
+}
+
+_get_play_id()
+{
+  local play_id
+  play_id="$(hostname -s)"
+  play_id="${play_id#*-}"
+  play_id="${play_id%%-*}"
+  echo "$play_id"
+}
+
+_get_nodes()
+{
+  local play_id; play_id="$(_get_play_id)"
+  grep "$play_id" /etc/hosts | awk '{print $NF}'
+}
+
+_get_nodes_ips()
+{
+  local play_id; play_id="$(_get_play_id)"
+  grep "$play_id" /etc/hosts | awk '{print $3,$1}'
+}
+
+_node_to_address()
+{
+  local node; node="$1"; shift
+  local play_id; play_id="$(_get_play_id)"
+  grep "$node-$play_id" /etc/hosts | awk '{print $1}'
+}
+
+_get_db_pass()
+{
+  local db_pass;
+  db_pass="$(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d | jq -r .apps.config.dbpass)"
+  [[ $db_pass == "null" ]] && db_pass="$(_get_play_id)"
+  echo "$db_pass"
+}
+
+_run_on_node()
+{
+  local node; node="$1"; shift
+  local comm; comm="$@"
+  ssh=();ssh=(ssh)
+  ssh+=(-o ControlPath=~/.ssh/cm-%r@%h:%p)
+  ssh+=(-o ControlMaster=auto)
+  ssh+=(-o ControlPersist=10m)
+  ssh+=(-o BatchMode=yes)
+  ssh+=(-o PreferredAuthentications=publickey)
+  ssh+=(-o PubkeyAuthentication=yes)
+  ssh+=(-o StrictHostKeyChecking=no)
+  ssh+=(root@"$node" -t "$comm")
+  ${ssh[@]}
+}
+
+_update_host_file()
+{
+  local nodes; nodes=($(_get_nodes_addresses))
+  local hostname
+  echo "# azcloud-apps" >> /etc/hosts
+  for node in ${nodes[@]}; do
+    hostname="$(_run_on_node "$node" hostname -s)"
+    echo "$node" "$hostname" "${hostname%%-*}" >> /etc/hosts
+  done
+}
+
+_is_it_first()
+{
+  local node; node="$1"; shift
+  local first; first=1
+  if [ "${node:(-1)}" = 1 ]; then
+    first=0
+  fi
+  return $first
+}
