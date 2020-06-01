@@ -21,7 +21,7 @@ _install_and_setup_keepalived()
 net.ipv4.ip_forward = 1
 net.ipv4.ip_nonlocal_bind = 1
 EOF
-
+  systemctl restart systemd-sysctl.service
   local keepalived_address; keepalived_address="$(_get_keepalived_address)"
   yum -y install keepalived
   mv /etc/keepalived/{keepalived.conf,keepalived.conf.orig}
@@ -37,7 +37,7 @@ vrrp_instance azcloud_apps {
         auth_pass $play_id
     }
     virtual_ipaddress {
-        $keeplived_adderss dev ens192 label ens192:vip
+        $keepalived_adderss dev ens192 label ens192:vip
     }
 }
 EOF
