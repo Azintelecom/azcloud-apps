@@ -10,6 +10,7 @@ load_module()
 
 main()
 {
+  set -x
   local app_path app_dir app_proxy run_module
   app_path="$1"; [ -z $app_path ] && { echo "app not found"; exit 1; }
   app_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >& /dev/null && pwd )"
