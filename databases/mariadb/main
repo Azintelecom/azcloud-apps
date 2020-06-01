@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-main()
+azapps_mariadb()
 {
   export HTTP_PROXY="$PROXY"
   export HTTPS_PROXY="$PROXY"
@@ -10,5 +10,3 @@ main()
   _install_and_setup_mariadb "$args"
   _finish "$args"
 }
-
-main

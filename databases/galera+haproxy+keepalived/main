@@ -34,7 +34,7 @@ setup_galera_nodes()
   _finish
 }
 
-main()
+azapps_databases_galera_haproxy_keepalived()
 {
   export HTTP_PROXY="$PROXY"
   export HTTPS_PROXY="$PROXY"
@@ -49,5 +49,3 @@ main()
     setup_galera_nodes
   fi
 }
-
-main

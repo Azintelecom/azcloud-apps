@@ -40,7 +40,7 @@ _start_docker()
   systemctl enable --now docker
 }
 
-main()
+azapps_docker_single()
 {
   _setup_firewall_and_selinux
   _setup_docker_repo
@@ -49,4 +49,3 @@ main()
   _start_docker
 }
 
-main
