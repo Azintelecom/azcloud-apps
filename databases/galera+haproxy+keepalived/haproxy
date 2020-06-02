@@ -15,7 +15,7 @@ _is_it_haproxy()
   node="${node%%-*}"; node=$(_node_to_address "$node")
   local haproxy_addresses; haproxy_addresses=($(_get_haproxy_addresses))
   local haproxy; haproxy=1
-  for haproxy_address in ${haproxy_addresses[@]}; do
+  for haproxy_address in "${haproxy_addresses[@]}"; do
     if [ "$haproxy_address" == "$node" ]; then
       haproxy=0
     fi
@@ -63,14 +63,24 @@ listen galera-cluster
     option mysql-check user haproxy_check
     balance roundrobin
 EOF
+
   IFS=$'\n'
-  for node in $(_get_nodes_ips); do
-    if ! _is_it_haproxy "${node%% *}"; then
-      cat <<EOF >> /etc/haproxy/haproxy.cfg
-    server ${node%% *} ${node##* }:3306 check
+  for node in $(_get_nodes); do
+    if ! _is_it_haproxy "$node"; then
+      address="$(_node_to_address)"
+      cat <<EOF >> /etc/haproxy/haproxy.conf
+    server ${node} ${address}:3306 check
 EOF
     fi
   done
+#  IFS=$'\n'
+#  for node in $(_get_nodes_ips); do
+#    if ! _is_it_haproxy "${node%% *}"; then
+#      cat <<EOF >> /etc/haproxy/haproxy.cfg
+#    server ${node%% *} ${node##* }:3306 check
+#EOF
+#    fi
+#  done
 
   systemctl start haproxy
 }
