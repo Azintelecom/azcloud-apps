@@ -37,7 +37,7 @@ vrrp_instance azcloud_apps {
         auth_pass $play_id
     }
     virtual_ipaddress {
-        $keepalived_adderss dev ens192 label ens192:vip
+        $keepalived_address dev ens192 label ens192:vip
     }
 }
 EOF

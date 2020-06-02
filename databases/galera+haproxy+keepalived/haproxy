@@ -65,7 +65,7 @@ listen galera-cluster
 EOF
   IFS=$'\n'
   for node in $(_get_nodes_ips); do
-    if [ "${node##* }" != "${my_address}" ]; then
+    if ! _is_it_haproxy "${node%% *}"; then
       cat <<EOF >> /etc/haproxy/haproxy.cfg
     server ${node%% *} ${node##* }:3306 check
 EOF
