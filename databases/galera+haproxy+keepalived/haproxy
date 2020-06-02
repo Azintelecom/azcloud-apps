@@ -64,9 +64,10 @@ listen galera-cluster
     balance roundrobin
 EOF
 
+  local address
   for node in $(_get_nodes); do
     if ! _is_it_haproxy "$node"; then
-      address="$(_node_to_address)"
+      address="$(_node_to_address "$node")"
       cat <<EOF >> /etc/haproxy/haproxy.cfg
     server ${node} ${address}:3306 check
 EOF
