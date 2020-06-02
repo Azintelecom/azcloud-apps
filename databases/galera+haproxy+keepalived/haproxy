@@ -64,7 +64,6 @@ listen galera-cluster
     balance roundrobin
 EOF
 
-  IFS=$'\n'
   for node in $(_get_nodes); do
     if ! _is_it_haproxy "$node"; then
       address="$(_node_to_address)"
@@ -73,14 +72,6 @@ EOF
 EOF
     fi
   done
-#  IFS=$'\n'
-#  for node in $(_get_nodes_ips); do
-#    if ! _is_it_haproxy "${node%% *}"; then
-#      cat <<EOF >> /etc/haproxy/haproxy.cfg
-#    server ${node%% *} ${node##* }:3306 check
-#EOF
-#    fi
-#  done
 
   systemctl start haproxy
 }

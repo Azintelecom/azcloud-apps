@@ -45,12 +45,6 @@ _get_nodes()
   grep "$play_id" /etc/hosts | awk '{print $NF}'
 }
 
-_get_nodes_ips()
-{
-  local play_id; play_id="$(_get_play_id)"
-  grep "$play_id" /etc/hosts | awk '{print $3,$1}'
-}
-
 _node_to_address()
 {
   local node; node="$1"; shift
