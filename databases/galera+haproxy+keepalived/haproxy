@@ -67,7 +67,7 @@ EOF
   for node in $(_get_nodes); do
     if ! _is_it_haproxy "$node"; then
       address="$(_node_to_address)"
-      cat <<EOF >> /etc/haproxy/haproxy.conf
+      cat <<EOF >> /etc/haproxy/haproxy.cfg
     server ${node} ${address}:3306 check
 EOF
     fi
