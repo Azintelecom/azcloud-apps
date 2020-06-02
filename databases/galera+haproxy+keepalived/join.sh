@@ -28,6 +28,7 @@ _join_cluster()
 
 main()
 {
+  set -x
   _join_starting
   _join_cluster && _join_success || _join_error
 }

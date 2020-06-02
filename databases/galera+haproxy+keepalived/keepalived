@@ -41,6 +41,7 @@ vrrp_instance azcloud_apps {
     }
 }
 EOF
+  systemctl enable --now keepalived
 }
 
 _install_and_setup_keepalived_master()
@@ -50,6 +51,6 @@ _install_and_setup_keepalived_master()
 
 _install_and_setup_keepalived_backup()
 {
-  _install_and_setup_keepalived BACKUP 11 110 
+  _install_and_setup_keepalived BACKUP 10 110 
 }
 
