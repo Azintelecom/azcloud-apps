@@ -41,7 +41,6 @@ _am_i_haproxy_master()
 
 _install_and_setup_haproxy()
 {
-  local my_address; my_address="$(hostname -i)"
   yum -y install haproxy keepalived
   mv /etc/haproxy/{haproxy.cfg,haproxy.cfg.orig}
   cat <<EOF > /etc/haproxy/haproxy.cfg
@@ -58,7 +57,7 @@ defaults
     timeout client 5000
 
 listen galera-cluster
-    bind $my_address:3306
+    bind 0.0.0.0:3306
     mode tcp
     option mysql-check user haproxy_check
     balance roundrobin

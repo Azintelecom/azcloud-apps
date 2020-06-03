@@ -46,11 +46,11 @@ EOF
 
 _install_and_setup_keepalived_master()
 {
-  _install_and_setup_keepalived MASTER 10 100
+  _install_and_setup_keepalived MASTER 10 101
 }
 
 _install_and_setup_keepalived_backup()
 {
-  _install_and_setup_keepalived BACKUP 10 110 
+  _install_and_setup_keepalived BACKUP 10 100 
 }
 
