@@ -49,7 +49,8 @@ _set_mariadb_password()
 {
   local mysql_root_password="$(_get_db_pass)"
   mysql -u root -p' ' -e "FLUSH PRIVILEGES;
-SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$mysql_root_password');"
+SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$mysql_root_password');
+DELETE FROM mysql.global_priv WHERE User='';"
 }
 
 _tune_mariadb_systemd()
