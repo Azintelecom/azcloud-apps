@@ -12,7 +12,7 @@ _is_it_first()
 
 _am_i_master()
 {
-  _is_it_first "${HOSTNAME}"
+  _is_it_first "${HOSTNAME%%-*}"
 }
 
 _get_nodes_addresses()
