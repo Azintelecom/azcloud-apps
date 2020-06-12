@@ -1,21 +1,23 @@
 #!/usr/bin/env bash
 
-_install_pgsql()
-{
-  sudo yum -y install postgresql-server postgresql-contrib
-  sudo postgresql-setup initdb
-  sudo systemctl enable --now postgresql
-}
-
 _setup_pgsql_storage()
 {
+  local mount_point; mount_point="/var/lib/pgsql"
+
   while IFS='' read -r a; do disks+=("$a"); done < <(lsblk | grep 'sd[b-z]' | awk '{print $1}' | sed 's@^@/dev/@g')
   [ -z "${disks[*]}" ] && { echo "no disk found"; return 1; }
-   vgcreate pgsql_storage "${disks[*]}"
-   lvcreate -n mariadb -l 100%VG pgsql_storage
-   mkfs.ext4 /dev/pgsql_storage/pgsql
-   mkdir -p /var/lib/pgsql
-   mount /dev/pgsql_storage/pgsql /var/lib/pgsql
+  vgcreate pgsql_storage "${disks[*]}"
+  lvcreate -n pgsql -l 100%VG pgsql_storage
+  mkfs.ext4 /dev/pgsql_storage/pgsql
+  mkdir -p "$mount_point"
+  mount /dev/pgsql_storage/pgsql "$mount_point"
+}
+
+_install_pgsql()
+{
+  yum -y install postgresql-server postgresql-contrib
+  postgresql-setup initdb
+  systemctl enable --now postgresql
 }
 
 _setup_pgsql_master()

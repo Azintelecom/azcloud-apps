@@ -2,8 +2,8 @@
 
 install_and_setup_postgresql()
 {
-  _install_pgsql
   _setup_pgsql_storage
+  _install_pgsql
   if _am_i_master; then
     _setup_pgsql_master
   else
