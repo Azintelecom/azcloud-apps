@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+install_and_setup_postgresql()
+{
+  _install_pgsql
+  _setup_pgsql_storage
+  if _am_i_master; then
+    _setup_pgsql_master
+  else
+    _setup_pgsql_slave
+  fi
+}
+
+general_prepare_nodes()
+{
+  _install_deps
+  _install_avahi_centos
+  _update_host_file 
+}
+
+azapps_databases_postgresql_master_slave()
+{
+  export HTTP_PROXY="$PROXY"
+  export HTTPS_PROXY="$PROXY"
+  export http_proxy="$PROXY"
+  export https_proxy="$PROXY"
+
+  general_prepare_nodes
+  install_and_setup_postgresql
+}
