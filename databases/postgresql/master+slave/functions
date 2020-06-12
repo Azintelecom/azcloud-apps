@@ -1,20 +1,35 @@
 #!/usr/bin/env bash
 
-_is_it_first()
+_get_master_address()
 {
-  local node; node="$1"; shift
-  local first; first=1
-  if [ "${node:(-1)}" = 1 ]; then
-    first=0
-  fi
-  return $first
+  (
+    for a in $(_get_nodes_addresses); do
+      echo "$a"
+    done
+  ) | sort -V | head -n1
 }
 
 _am_i_master()
 {
-  _is_it_first "${HOSTNAME%%-*}"
+  local master_address; master_address="$(_get_master_address)"
+  local my_address; my_address="$(hostname -i)"
+  local exitcode; exitcode=1
+
+  if [ "$my_address" == "$master_address" ]; then
+    exitcode=0
+  fi
+  return ${exitcode}
 }
 
+_get_slave_address()
+{
+  (
+    for a in $(_get_nodes_addresses); do
+      echo "$a"
+    done
+  ) | sort -V | tail -n1
+}
+  
 _get_nodes_addresses()
 {
   local addresses;
@@ -48,6 +63,3 @@ _run_on_node()
   ssh+=(root@"$node" -t "$comm")
   "${ssh[@]}"
 }
-
-
-

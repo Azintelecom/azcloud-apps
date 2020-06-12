@@ -13,19 +13,53 @@ _setup_pgsql_storage()
   mount /dev/pgsql_storage/pgsql "$mount_point"
 }
 
-_install_pgsql()
+_install_and_setup_pgsql()
 {
+  local play_id; play_id="$(hostname -s)"
+  play_id="${play_id#*-}"; play_id="${play_id%%-*}"
+
   yum -y install postgresql-server postgresql-contrib
   postgresql-setup initdb
   systemctl enable --now postgresql
+
+  su - postgres -c "psql -c \"CREATE USER replication REPLICATION LOGIN CONNECTION LIMIT 1 ENCRYPTED PASSWORD '$play_id'; \""
 }
 
 _setup_pgsql_master()
 {
-  :
+  local my_address; my_address="$(hostname -i)"
+  local pgsql_home; pgsql_home="/var/lib/pgsql"
+  local pgsql_data; pgsql_data="$pgsql_home/data"
+  local pgsql_archive; pgsql_archive="$pgsql_home/archive"
+
+  cp "$pgsql_data"/{postgresql.conf,postgresql.conf.orig}
+
+  cat <<EOF >> $pgsql_data/postgresql.conf
+listen_addresses = 'localhost,$my_address'
+wal_level = hot_standby
+synchronous_commit = local
+archive_node = on
+archive_command = 'cp %p $pgsql_archive/%f'
+max_wal_senders = 2
+wal_keep_segments = 10
+synchronous_standby_names = 'pgslave01'
+EOF
+  mkdir -p "$pgsql_archive"
+  chmod 700 "$pgsql_archive"
+  chown -R postgres:postgres "$pgsql_archive"
+
+  local slave_address; slave_address="$(_get_slave_address)"
+  local master_address; master_address="$(_get_master_address)"
+  cp "$pgsql_data"/{pg_hba.conf,pg_hba.conf}
+  cat <<EOF >> $pgsql_data/pg_hba.conf
+host    replication     replication     127.0.0.1/32   md5
+host    replication     replication     $master_address/32   md5
+host    replication     replication     $slave_address/32   md5
+EOF
+  systemctl restart postgresql
 }
 
 _setup_pgsql_slave()
 {
-  :
+  systemctl stop postgresql
 }
