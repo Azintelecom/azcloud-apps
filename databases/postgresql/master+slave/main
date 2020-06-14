@@ -8,8 +8,6 @@ install_and_setup_postgresql()
 
   if _am_i_master; then
     _setup_pgsql_master
-  else
-    _setup_pgsql_slave
   fi
 }
 
