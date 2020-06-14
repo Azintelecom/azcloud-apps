@@ -2,7 +2,7 @@
 
 _install_deps()
 {
-  yum -y install tmux jq vim
+  yum -y install tmux jq vim nc
 }
 
 _install_avahi_centos()
