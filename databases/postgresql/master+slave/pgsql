@@ -15,8 +15,8 @@ _setup_pgsql_storage()
 
 _install_and_setup_pgsql()
 {
-  local play_id; play_id="$(hostname -s)"
-  play_id="${play_id#*-}"; play_id="${play_id%%-*}"
+
+  local play_id; play_id="$(_get_play_id)"
 
   yum -y install postgresql-server postgresql-contrib
   postgresql-setup initdb
@@ -31,6 +31,8 @@ _setup_pgsql_master()
   local pgsql_home; pgsql_home="/var/lib/pgsql"
   local pgsql_data; pgsql_data="$pgsql_home/data"
   local pgsql_archive; pgsql_archive="$pgsql_home/archive"
+
+  systemctl stop postgresql || fatal "Could not stop postgresql.service"
 
   su - postgres -c "cp $pgsql_data/{postgresql.conf,postgresql.conf.orig}"
 
@@ -54,14 +56,54 @@ EOF
   su - postgres -c "cp $pgsql_data/{pg_hba.conf,pg_hba.conf.orig}"
 
   cat <<EOF >> $pgsql_data/pg_hba.conf
-host    replication     replication     127.0.0.1/32   md5
-host    replication     replication     $master_address/32   md5
-host    replication     replication     $slave_address/32   md5
+host    replication     replication     127.0.0.1/32   trust
+host    replication     replication     $master_address/32   trust
+host    replication     replication     $slave_address/32   trust
 EOF
-  systemctl restart postgresql
+  systemctl start postgresql || fatal "Could not start postgresql.service"
 }
 
 _setup_pgsql_slave()
 {
-  systemctl stop postgresql
+  local play_id; play_id="$(_get_play_id)"
+  local pgsql_home; pgsql_home="/var/lib/pgsql"
+  local pgsql_data; pgsql_data="$pgsql_home/data"
+  local my_address; my_address="$(hostname -i)"
+  local master_address; master_address="$(_get_master_address)"
+  local slave_address; slave_address="$(_get_slave_address)"
+
+  systemctl stop postgresql || fatal "Could not stop postgresql.service"
+
+  mv "$pgsql_home"/{data,data-back}
+  mkdir -p "$pgsql_data"
+  chmod 700 "$pgsql_data"
+  chown -R postgres:postgres "$pgsql_data"
+
+  su - postgres -c "pg_basebackup -h $master_address -U replication -D $pgsql_data -P --xlog" \
+    || fatal "Could not sync replication data"
+
+  cat <<EOF >> $pgsql_data/postgresql.conf
+hot_standby = on
+EOF
+  # change address to slave
+  sed -i "/listen_address/s/=.*/= 'localhost,$my_address'/g" "$pgsql_data"/postgresql.conf
+
+  cat <<EOF >> $pgsql_data/recovery.conf
+standby_mode = 'on'
+primary_conninfo = 'host=$master_address port=5432 user=replication password=$play_id application_name=pgslave01'
+trigger_file = '/tmp/postgresql.trigger.5432'
+EOF
+  systemctl start postgresql || fatal "Could not start postgresql.service"
+}
+
+_setup_firewall_and_selinux()
+{
+  if systemctl is-active firewalld | grep -q active; then
+    firewall-cmd --permanent --zone=public --add-service=postgresql
+  elif command -v iptables >& /dev/null; then
+    iptables -I INPUT -p tcp --dport 5432 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
+ fi
+
+  # set domain to permissive mode
+  semanage permissive -a postgresql_t
 }

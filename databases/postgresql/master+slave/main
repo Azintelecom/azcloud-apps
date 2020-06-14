@@ -4,6 +4,8 @@ install_and_setup_postgresql()
 {
   _setup_pgsql_storage
   _install_and_setup_pgsql
+  _setup_firewall_and_selinux
+
   if _am_i_master; then
     _setup_pgsql_master
   else
