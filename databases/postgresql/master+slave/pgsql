@@ -42,7 +42,6 @@ _setup_pgsql_slave()
   local play_id; play_id="$(_get_play_id)"
   local pgsql_home; pgsql_home="/var/lib/pgsql"
   local pgsql_data; pgsql_data="$pgsql_home/data"
-  local my_address; my_address="$(hostname -i)"
   local master_address; master_address="$(_get_master_address)"
   local slave_address; slave_address="$(_get_slave_address)"
 
@@ -60,7 +59,7 @@ _setup_pgsql_slave()
 hot_standby = on
 EOF
   # change address to slave
-  sed -i "/listen_address/s/=.*/= 'localhost,$my_address'/g" "$pgsql_data"/postgresql.conf
+  sed -i "/listen_address/s/=.*/= 'localhost,$slave_address'/g" "$pgsql_data"/postgresql.conf
 
   cat <<EOF >> $pgsql_data/recovery.conf
 standby_mode = 'on'
