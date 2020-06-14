@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+_setup_and_install_citus()
+{
+  local pgsql_home; pgsql_home="/var/lib/pgsql/10"
+  local pgsql_data; pgsql_data="$pgsql_home/data"
+  local net_address; net_address="$(hostname -i)"
+  net_address="${net_address%.*}.0"
+
+  curl https://install.citusdata.com/community/rpm.sh | bash -x
+  yum -y install citus72_10
+  service postgresql-10 initdb || /usr/pgsql-10/bin/postgresql-10-setup initdb
+  cp "$pgsql_data"/{postgresql.conf,postgresql.conf.orig}
+  echo "shared_preload_libraries = 'citus'" >> "$pgsql_data"/postgresql.conf
+  cat <<EOF >> $pgsql_data/postgresql.conf
+listen_addresses = '*'
+EOF
+  cp "$pgsql_data"/{pg_hba.conf,pg_hba.conf.orig}
+  cat <<EOF >> $pgsql_data/pg_hba.conf
+host	all		all		$net_address/24		trust
+host	al		all		127.0.0.1/32		trust
+EOF
+
+  service postgresql-10 restart
+  chkconfig postgresql-10 on
+  sudo -i -u postgres psql -c "CREATE EXTENSION citus;"
+}
+
+_setup_coordinate_node()
+{
+  for node in $(_get_nodes_addresses); do
+    if _am_i_coordinator; then
+      continue
+    fi
+    sudo -i -u postgres psql -c "SELECT * from master_add_node('$node', 5432);"
+  done
+}
