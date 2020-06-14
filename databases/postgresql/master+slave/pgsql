@@ -37,11 +37,29 @@ _setup_firewall_and_selinux()
   semanage permissive -a postgresql_t
 }
 
+_wait_for_master()
+{
+  local master_address; master_address="$1"; shift
+  local exitcode
+
+  while true; do
+    nc -v -w1 "$master_address" 5432 >& /dev/null
+    exitcode="$?"
+    if [ $exitcode = 0 ]; then
+      return $exitcode
+    fi
+    sleep 5
+    ((attempts++))
+    [ "$attempts" -gt 24 ] && { exitcode=1; return $exitcode; }
+  done
+}
+
 _setup_pgsql_slave()
 {
   local play_id; play_id="$(_get_play_id)"
   local pgsql_home; pgsql_home="/var/lib/pgsql"
   local pgsql_data; pgsql_data="$pgsql_home/data"
+  local my_address; my_address="$(hostname -i)"
   local master_address; master_address="$(_get_master_address)"
   local slave_address; slave_address="$(_get_slave_address)"
 
@@ -52,6 +70,8 @@ _setup_pgsql_slave()
   chmod 700 "$pgsql_data"
   chown -R postgres:postgres "$pgsql_data"
 
+  _wait_for_master "$master_address" || fatal "Time wait for master expired, master: $master_address"
+
   su - postgres -c "pg_basebackup -h $master_address -U replication -D $pgsql_data -P --xlog" \
     || fatal "Could not sync replication data"
 
@@ -59,7 +79,7 @@ _setup_pgsql_slave()
 hot_standby = on
 EOF
   # change address to slave
-  sed -i "/listen_address/s/=.*/= 'localhost,$slave_address'/g" "$pgsql_data"/postgresql.conf
+  sed -i "/listen_address/s/=.*/= 'localhost,$my_address'/g" "$pgsql_data"/postgresql.conf
 
   cat <<EOF >> $pgsql_data/recovery.conf
 standby_mode = 'on'
@@ -105,7 +125,6 @@ host    replication     replication     $master_address/32   trust
 host    replication     replication     $slave_address/32   trust
 EOF
   systemctl start postgresql || fatal "Could not start postgresql.service"
-  _setup_pgsql_slave || fatal "Could not setup slave node: $(_get_slave_address)"
 }
 
 
