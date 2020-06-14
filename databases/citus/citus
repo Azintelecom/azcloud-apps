@@ -9,7 +9,7 @@ _setup_and_install_citus()
 
   curl https://install.citusdata.com/community/rpm.sh | bash -x
   yum -y install citus72_10
-  service postgresql-10 initdb || /usr/pgsql-10/bin/postgresql-10-setup initdb
+  /usr/pgsql-10/bin/postgresql-10-setup initdb
   cp "$pgsql_data"/{postgresql.conf,postgresql.conf.orig}
   echo "shared_preload_libraries = 'citus'" >> "$pgsql_data"/postgresql.conf
   cat <<EOF >> $pgsql_data/postgresql.conf
@@ -21,12 +21,12 @@ host	all		all		$net_address/24		trust
 host	al		all		127.0.0.1/32		trust
 EOF
 
-  service postgresql-10 restart
-  chkconfig postgresql-10 on
+  systemctl restart postgresql-10.service
+  systemctl enable postgresql-10.service
   sudo -i -u postgres psql -c "CREATE EXTENSION citus;"
 }
 
-_setup_coordinate_node()
+_setup_coordinator_node()
 {
   for node in $(_get_nodes_addresses); do
     if _am_i_coordinator; then
