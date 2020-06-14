@@ -17,7 +17,7 @@ install_and_setup_citus()
   fi
 }
 
-azapps_databases_postgresql_citus()
+azapps_databases_citus()
 {
   export HTTP_PROXY="$PROXY"
   export HTTPS_PROXY="$PROXY"
