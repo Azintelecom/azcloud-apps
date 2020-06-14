@@ -54,41 +54,6 @@ _wait_for_master()
   done
 }
 
-_setup_pgsql_slave()
-{
-  local play_id; play_id="$(_get_play_id)"
-  local pgsql_home; pgsql_home="/var/lib/pgsql"
-  local pgsql_data; pgsql_data="$pgsql_home/data"
-  local my_address; my_address="$(hostname -i)"
-  local master_address; master_address="$(_get_master_address)"
-  local slave_address; slave_address="$(_get_slave_address)"
-
-  systemctl stop postgresql || fatal "Could not stop postgresql.service"
-
-  mv "$pgsql_home"/{data,data-back}
-  mkdir -p "$pgsql_data"
-  chmod 700 "$pgsql_data"
-  chown -R postgres:postgres "$pgsql_data"
-
-  _wait_for_master "$master_address" || fatal "Time wait for master expired, master: $master_address"
-
-  su - postgres -c "pg_basebackup -h $master_address -U replication -D $pgsql_data -P --xlog" \
-    || fatal "Could not sync replication data"
-
-  cat <<EOF >> $pgsql_data/postgresql.conf
-hot_standby = on
-EOF
-  # change address to slave
-  sed -i "/listen_address/s/=.*/= 'localhost,$my_address'/g" "$pgsql_data"/postgresql.conf
-
-  cat <<EOF >> $pgsql_data/recovery.conf
-standby_mode = 'on'
-primary_conninfo = 'host=$master_address port=5432 user=replication password=$play_id application_name=pgslave01'
-trigger_file = '/tmp/postgresql.trigger.5432'
-EOF
-  systemctl start postgresql || fatal "Could not start postgresql.service"
-}
-
 _setup_pgsql_master()
 {
   local my_address; my_address="$(hostname -i)"
@@ -123,6 +88,41 @@ EOF
 host    replication     replication     127.0.0.1/32   trust
 host    replication     replication     $master_address/32   trust
 host    replication     replication     $slave_address/32   trust
+EOF
+  systemctl start postgresql || fatal "Could not start postgresql.service"
+}
+
+_setup_pgsql_slave()
+{
+  local play_id; play_id="$(_get_play_id)"
+  local pgsql_home; pgsql_home="/var/lib/pgsql"
+  local pgsql_data; pgsql_data="$pgsql_home/data"
+  local my_address; my_address="$(hostname -i)"
+  local master_address; master_address="$(_get_master_address)"
+  local slave_address; slave_address="$(_get_slave_address)"
+
+  systemctl stop postgresql || fatal "Could not stop postgresql.service"
+
+  mv "$pgsql_home"/{data,data_original}
+  mkdir -p "$pgsql_data"
+  chmod 700 "$pgsql_data"
+  chown -R postgres:postgres "$pgsql_data"
+
+  _wait_for_master "$master_address" || fatal "Time wait for master expired, master: $master_address"
+
+  su - postgres -c "pg_basebackup -h $master_address -U replication -D $pgsql_data -P --xlog" \
+    || fatal "Could not sync replication data"
+
+  cat <<EOF >> $pgsql_data/postgresql.conf
+hot_standby = on
+EOF
+  # change address to slave
+  sed -i "/listen_address/s/=.*/= 'localhost,$my_address'/g" "$pgsql_data"/postgresql.conf
+
+  cat <<EOF >> $pgsql_data/recovery.conf
+standby_mode = 'on'
+primary_conninfo = 'host=$master_address port=5432 user=replication password=$play_id application_name=pgslave01'
+trigger_file = '/tmp/postgresql.trigger.5432'
 EOF
   systemctl start postgresql || fatal "Could not start postgresql.service"
 }
