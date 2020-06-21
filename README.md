@@ -13,10 +13,15 @@ installation provided by Azintelecom IT/Dev team.
 
 ## Getting started
 
+First list all available apps:
+```
+azin apps list
+```
+
 Create glaera cluster from 3 nodes 200GB in size.
 
 ```
-	azin apps deploy --name databases/galera --size 3 --storage 200
+azin apps deploy --name databases/galera --size 3 --storage 200
 ```
 
 
