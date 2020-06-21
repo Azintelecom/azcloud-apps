@@ -30,7 +30,7 @@ _setup_coordinator_node()
 {
   for node in $(_get_nodes_addresses); do
     if _am_i_coordinator; then
-      continue
+      return
     fi
     sudo -i -u postgres psql -c "SELECT * from master_add_node('$node', 5432);"
   done
