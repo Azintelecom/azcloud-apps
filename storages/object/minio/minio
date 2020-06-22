@@ -2,14 +2,13 @@
 
 _setup_firewall_and_selinux()
 {
+  [ -z "$MINIO_PORT" ] && MINIO_PORT=9000
+
   if systemctl is-active firewalld | grep -q active; then
     firewall-cmd --permanent --zone=public --add-port="$MINIO_PORT"/tcp
   elif command -v iptables >& /dev/null; then
     iptables -I INPUT -p tcp --dport "$MINIO_PORT" -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
  fi
-
-  # set domain to permissive mode
-  semanage permissive -a mysqld_t
 }
 
 _setup_minio_storage()
