@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+
+install_and_run_minio()
+{
+  _setup_firewall_and_selinux
+  _setup_minio_storage
+  _install_and_run_minio
+}
+
 azapps_storages_object_minio()
 {
   export HTTP_PROXY="$PROXY"
@@ -8,5 +16,7 @@ azapps_storages_object_minio()
   export https_proxy="$PROXY"
 
   export MINIO_STORAGE="/minio/data" 
-  _install_and_run_minio
+  export MINIO_PORT=9000
+
+  install_and_run_minio
 }

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+_get_play_id()
+{
+  local play_id
+  play_id="$(hostname -s)"
+  play_id="${play_id#*-}"
+  play_id="${play_id%%-*}"
+  echo "$play_id"
+}
