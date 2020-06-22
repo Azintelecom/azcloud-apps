@@ -14,16 +14,23 @@ _setup_firewall_and_selinux()
 
 _setup_minio_storage()
 {
+  local storage_vol; storage_vol="minio"
+  local storage_group; storage_group="${storage_vol}_storage"
+  local storage_dev; storage_dev="/dev/${storage_group}/${storage_vol}"
+
   [ -z "$MINIO_STORAGE" ] && fatal "MINIO_STORAGE not defined"
 
   mkdir -p "$MINIO_STORAGE"
 
   while IFS='' read -r a; do disks+=("$a"); done < <(lsblk | grep 'sd[b-z]' | awk '{print $1}' | sed 's@^@/dev/@g')
   [ -z "${disks[*]}" ] && { echo "no disk found"; return 1; }
-  vgcreate minio_storage "${disks[*]}"
-  lvcreate -n minio -l 100%VG minio_storage
-  mkfs.ext4 /dev/minio_storage/minio
-  mount /dev/minio_storage/minio "$MINIO_STORAGE"
+  vgcreate "$storage_group" "${disks[*]}"
+  lvcreate -n "$storage_vol" -l 100%VG "$storage_group"
+  mkfs.ext4 "$storage_dev"
+  mount "$storage_dev" "$MINIO_STORAGE"
+  cat <<EOF >> /etc/fstab
+$storage_dev $MINIO_STORAGE ext4 default 0 0
+EOF
 }
 
 _install_and_run_minio()
