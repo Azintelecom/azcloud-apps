@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+_setup_minio_storage()
+{
+  [ -z "$MINIO_STORAGE" ] && fatal "MINIO_STORAGE not defined"
+
+  while IFS='' read -r a; do disks+=("$a"); done < <(lsblk | grep 'sd[b-z]' | awk '{print $1}' | sed 's@^@/dev/@g')
+  [ -z "${disks[*]}" ] && { echo "no disk found"; return 1; }
+  vgcreate minio_storage "${disks[*]}"
+  lvcreate -n minio -l 100%VG minio_storage
+  mkfs.ext4 /dev/minio_storage/minio
+  mkdir -p "$MINIO_STORAGE"
+  mount /dev/minio_storage/minio "$MINIO_STORAGE"
+}
+
+_install_and_run_minio()
+{
+  local minio; minio="/usr/local/bin/minio"
+
+  curl https://dl.min.io/server/minio/release/linux-amd64/minio -o "$minio"
+  chmod +x "$minio"
+
+  unset HTTP_PROXY
+  unset HTTPS_PROXY
+  unset http_server
+  unset https_server
+
+  _setup_minio_storage && "$minio" server "$MINIO_STORAGE"
+}
+
