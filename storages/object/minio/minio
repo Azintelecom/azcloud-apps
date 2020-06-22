@@ -35,7 +35,7 @@ _install_and_run_minio()
   curl https://dl.min.io/server/minio/release/linux-amd64/minio -o "$minio"
   chmod +x "$minio"
 
-  cat <<EOF > /etc/systemd/system/minio.service
+   cat <<EOF > /etc/systemd/system/minio.service
 [Unit]
 Description=MinIO
 Documentation=https://docs.min.io
@@ -69,7 +69,9 @@ WantedBy=multi-user.target
 
 EOF
 
+  # set MINIO_STORAGE permissions
   useradd "$minio_user"
+  chown "$minio_user":"$minio_user" "$MINIO_STORAGE"
 
   cat <<EOF > /etc/default/minio
 MINIO_ACCESS_KEY=$play_id
@@ -77,7 +79,7 @@ MINIO_SECRET_KEY=$play_id
 MINIO_VOLUMES=$MINIO_STORAGE
 MINIO_OPTS="--address 0.0.0.0:9000"
 EOF
-
+  
   unset HTTP_PROXY
   unset HTTPS_PROXY
   unset http_server
