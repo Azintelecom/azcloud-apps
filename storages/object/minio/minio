@@ -93,6 +93,6 @@ EOF
   unset https_server
 
   systemctl daemon-reload
-  systemctl start minio
+  systemctl enable --now minio
 }
 
