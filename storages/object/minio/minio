@@ -4,12 +4,13 @@ _setup_minio_storage()
 {
   [ -z "$MINIO_STORAGE" ] && fatal "MINIO_STORAGE not defined"
 
+  mkdir -p "$MINIO_STORAGE"
+
   while IFS='' read -r a; do disks+=("$a"); done < <(lsblk | grep 'sd[b-z]' | awk '{print $1}' | sed 's@^@/dev/@g')
   [ -z "${disks[*]}" ] && { echo "no disk found"; return 1; }
   vgcreate minio_storage "${disks[*]}"
   lvcreate -n minio -l 100%VG minio_storage
   mkfs.ext4 /dev/minio_storage/minio
-  mkdir -p "$MINIO_STORAGE"
   mount /dev/minio_storage/minio "$MINIO_STORAGE"
 }
 
