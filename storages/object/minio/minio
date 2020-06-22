@@ -29,7 +29,7 @@ _setup_minio_storage()
   mkfs.ext4 "$storage_dev"
   mount "$storage_dev" "$MINIO_STORAGE"
   cat <<EOF >> /etc/fstab
-$storage_dev $MINIO_STORAGE ext4 default 0 0
+$storage_dev $MINIO_STORAGE ext4 defaults 0 0
 EOF
 }
 
