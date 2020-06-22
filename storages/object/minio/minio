@@ -8,7 +8,12 @@ _setup_firewall_and_selinux()
     firewall-cmd --permanent --zone=public --add-port="$MINIO_PORT"/tcp
   elif command -v iptables >& /dev/null; then
     iptables -I INPUT -p tcp --dport "$MINIO_PORT" -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
- fi
+  fi
+  
+  # set selinux to permissiv
+  setenforce 0
+  sed -i '/^SELINUX=enforcing/s/enforcing/permissive/g' /etc/selinux/config
+ 
 }
 
 _setup_minio_storage()
