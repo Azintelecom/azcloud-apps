@@ -13,7 +13,9 @@ fatal()
 
 _setup_firewall_and_selinux()
 {
-  :
+  # set selinux to permissiv
+  setenforce 0
+  sed -i '/^SELINUX=enforcing/s/enforcing/permissive/g' /etc/selinux/config
 }
 
 _setup_docker_repo()
