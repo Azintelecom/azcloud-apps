@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+
+general_prepare_nodes()
+{
+  _install_deps
+  _update_host_file
+}
+
+install_and_setup_gluster_iscsi()
+{
+  _setup_firewall_and_selinux
+  _setup_gluster_storage
+  _install_gluster
+
+  if _am_i_master; then
+    _setup_gluster
+  fi
+
+  # setup iscsi for all nodes
+  _setup_iscsi
+}
+
+azapps_storages_filesystem_gluster()
+{
+  export HTTP_PROXY="$PROXY"
+  export HTTPS_PROXY="$PROXY"
+  export http_proxy="$PROXY"
+  export https_proxy="$PROXY"
+
+  export GLUSTER_STORAGE="/gluster"
+
+  general_prepare_nodes
+  install_and_setup_gluster_iscsi
+}
