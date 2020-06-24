@@ -15,7 +15,7 @@ _wait_for_glusterd()
     ((attempts-=1))
 
     if nc -v -z "$node" 24007; then
-      ((glusterd_nodes+=1))
+      ((glusterd_ready_nodes+=1))
     fi
     sleep 5
   done
