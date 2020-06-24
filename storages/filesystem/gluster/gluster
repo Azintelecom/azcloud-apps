@@ -86,5 +86,5 @@ _setup_gluster()
   # create gluster volume
   gluster volume create "$play_id" \
     replica "$connected_nodes" transport tcp \
-    "${peer_nodes_mounts[*]}" || fatal "Could not create gluster volume"
+    ${peer_nodes_mounts[*]} || fatal "Could not create gluster volume"
 }
