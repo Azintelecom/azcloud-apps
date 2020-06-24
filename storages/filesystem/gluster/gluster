@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 _wait_for_glusterd()
 {
   # shellcheck disabled=SC2207
@@ -68,7 +67,7 @@ _install_gluster()
 
 _setup_gluster()
 {
-  local play_id; play_id="$(_get_play_id)"
+  local vol_name; vol_name="$(_get_play_id)"
   local peer_nodes_mounts
   local connected_nodes
 
@@ -84,7 +83,10 @@ _setup_gluster()
   fi
 
   # create gluster volume
-  gluster volume create "$play_id" \
+  gluster volume create "$vol_name" \
     replica "$connected_nodes" transport tcp \
     ${peer_nodes_mounts[*]} || fatal "Could not create gluster volume"
+
+  gluster volume start "$vol_name" || fatal "Could not start gluster volume:$vol_name"
+  gluster volume status "$vol_name"
 }
