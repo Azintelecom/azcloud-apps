@@ -3,6 +3,7 @@
 
 _wait_for_glusterd()
 {
+  # shellcheck disabled=SC2207
   local gluster_nodes; gluster_nodes=($(_get_play_nodes))
   local glusterd_ready_nodes; glusterd_ready_nodes=0
   local attempts; attempts=120
@@ -26,7 +27,7 @@ _setup_gluster_storage()
   local storage_group; storage_group="${storage_vol}_storage"
   local storage_dev; storage_dev="/dev/${storage_group}/${storage_vol}"
 
-  [ -z "$GLUSTER_STORAGE" ] || fatal "Could not find GLUSTER_STORAGE"
+  [ -z "$GLUSTER_STORAGE" ] && fatal "Could not find GLUSTER_STORAGE"
   mkdir -p "$GLUSTER_STORAGE"
 
   while IFS='' read -r a; do disks+=("$a"); done < <(lsblk | grep 'sd[b-z]' | awk '{print $1}' | sed 's@^@/dev/@g')
