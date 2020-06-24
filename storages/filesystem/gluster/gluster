@@ -6,7 +6,7 @@ _setup_gluster_storage()
   local storage_group; storage_group="${storage_vol}_storage"
   local storage_dev; storage_dev="/dev/${storage_group}/${storage_vol}"
 
-  GLUSTER_STORAGE="/gluster/brick0"
+  GLUSTER_STORAGE="/gluster"
   mkdir -p "$GLUSTER_STORAGE"
 
   while IFS='' read -r a; do disks+=("$a"); done < <(lsblk | grep 'sd[b-z]' | awk '{print $1}' | sed 's@^@/dev/@g')
@@ -18,6 +18,7 @@ _setup_gluster_storage()
   cat <<EOF >> /etc/fstab
 $storage_dev $GLUSTER_STORAGE ext4 defaults 0 0
 EOF
+  mkdir -p "$GLUSTER_STORAGE"/brick0
 }
 
 _setup_firewall_and_selinux()
