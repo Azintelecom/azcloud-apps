@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+_setup_gluster_storage()
+{
+  local storage_vol; storage_vol="gluster"
+  local storage_group; storage_group="${storage_vol}_storage"
+  local storage_dev; storage_dev="/dev/${storage_group}/${storage_vol}"
+
+  GLUSTER_STORAGE="/brick0"
+  mkdir -p "$GLUSTER_STORAGE"
+
+  while IFS='' read -r a; do disks+=("$a"); done < <(lsblk | grep 'sd[b-z]' | awk '{print $1}' | sed 's@^@/dev/@g')
+  [ -z "${disks[*]}" ] && { echo "no disk found"; return 1; }
+  vgcreate "$storage_group" "${disks[*]}"
+  lvcreate -n "$storage_vol" -l 100%VG "$storage_group"
+  mkfs.ext4 "$storage_dev"
+  mount "$storage_dev" "$GLUSTER_STORAGE"
+  cat <<EOF >> /etc/fstab
+$storage_dev $GLUSTER_STORAGE ext4 defaults 0 0
+EOF
+}
+
+_setup_firewall_and_selinux()
+{
+  if systemctl is-active firewalld | grep -q active; then
+    firewall-cmd --permanent --zone=public --add-service=glusterfs
+  elif command -v iptables >& /dev/null; then
+    iptables -I INPUT -p tcp --dport 24007 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
+ fi
+
+  # set domain to permissive mode
+  semanage permissive -a glusterd_t
+}
+
+_install_and_setup_gluster()
+{
+  yum -y install centos-release-gluster7.noarch
+  yum -y install glusterfs \
+                 glusterfs-fuse \
+                 glusterfs-server \
+                 glusterfs-libs \
+                 glusterfs-cli
+ 
+  systemctl enable --now glusterd
+}
+
