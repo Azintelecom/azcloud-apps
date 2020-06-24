@@ -75,9 +75,7 @@ _setup_gluster()
   _wait_for_glusterd 
 
   while read -r node; do
-    if _glusterd_ready "$node"; then
-      gluster peer probe "$node" && peer_nodes_mounts+=("$node":"$GLUSTER_STORAGE"/brick0)
-    fi
+    gluster peer probe "$node" && peer_nodes_mounts+=("$node":"$GLUSTER_STORAGE"/brick0)
   done < <(_get_play_nodes)
 
   connected_nodes="$(gluster pool list | grep -c Connected)" 
