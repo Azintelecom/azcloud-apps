@@ -3,6 +3,7 @@
 
 general_prepare_nodes()
 {
+  _install_deps
   _update_host_file
 }
 
@@ -10,7 +11,11 @@ install_and_setup_gluster()
 {
   _setup_firewall_and_selinux
   _setup_gluster_storage
-  _install_and_setup_gluster
+  _install_gluster
+
+  if _am_i_master; then
+    _setup_gluster
+  fi
 }
 
 azapps_storages_filesystem_gluster()
@@ -19,6 +24,8 @@ azapps_storages_filesystem_gluster()
   export HTTPS_PROXY="$PROXY"
   export http_proxy="$PROXY"
   export https_proxy="$PROXY"
+
+  export GLUSTER_STORAGE="/gluster"
 
   general_prepare_nodes
   install_and_setup_gluster

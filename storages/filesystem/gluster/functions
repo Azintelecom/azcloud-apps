@@ -42,3 +42,33 @@ _get_play_id()
   play_id="${play_id%%-*}"
   echo "$play_id"
 }
+
+_get_master_address()
+{
+  (
+    for a in $(_get_nodes_addresses); do
+      echo "$a"
+    done
+  ) | sort -V | head -n1
+}
+
+_am_i_master()
+{
+  local master_address; master_address="$(_get_master_address)"
+  local my_address; my_address="$(hostname -i)"
+  local exitcode; exitcode=1
+
+  if [ "$my_address" == "$master_address" ]; then
+    exitcode=0
+  fi
+  return ${exitcode}
+}
+
+_get_play_nodes()
+{
+  local play_id; play_id="$(_get_play_id)"
+  while read -r node; do
+    echo "$node"
+  done < <(grep "$play_id" /etc/hosts | awk '{print $NF}')
+}
+

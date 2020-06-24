@@ -1,12 +1,32 @@
 #!/usr/bin/env bash
 
+
+_wait_for_glusterd()
+{
+  local gluster_nodes; gluster_nodes=($(_get_play_nodes))
+  local glusterd_ready_nodes; glusterd_ready_nodes=0
+  local attempts; attempts=120
+
+  while [[ "$glusterd_ready_nodes" -ne "${#gluster_nodes[*]}" ]]; do
+    if [[ "$attempts" -eq 0 ]]; then
+      fatal "Some nodes are not have running glusterd"
+    fi
+    ((attempts-=1))
+
+    if nc -v -z "$node" 24007; then
+      ((glusterd_nodes+=1))
+    fi
+    sleep 5
+  done
+}
+
 _setup_gluster_storage()
 {
   local storage_vol; storage_vol="gluster"
   local storage_group; storage_group="${storage_vol}_storage"
   local storage_dev; storage_dev="/dev/${storage_group}/${storage_vol}"
 
-  GLUSTER_STORAGE="/gluster"
+  [ -z "$GLUSTER_STORAGE" ] || fatal "Could not find GLUSTER_STORAGE"
   mkdir -p "$GLUSTER_STORAGE"
 
   while IFS='' read -r a; do disks+=("$a"); done < <(lsblk | grep 'sd[b-z]' | awk '{print $1}' | sed 's@^@/dev/@g')
@@ -33,7 +53,7 @@ _setup_firewall_and_selinux()
   semanage permissive -a glusterd_t
 }
 
-_install_and_setup_gluster()
+_install_gluster()
 {
   yum -y install centos-release-gluster7.noarch
   yum -y install glusterfs \
@@ -45,3 +65,27 @@ _install_and_setup_gluster()
   systemctl enable --now glusterd
 }
 
+_setup_gluster()
+{
+  local play_id; play_id="$(_get_play_id)"
+  local peer_nodes_mounts
+  local connected_nodes
+
+  _wait_for_glusterd 
+
+  while read -r node; do
+    if _glusterd_ready "$node"; then
+      gluster peer probe "$node" && peer_nodes_mounts+=("$node":"$GLUSTER_STORAGE"/brick0)
+    fi
+  done < <(_get_play_nodes)
+
+  connected_nodes="$(gluster pool list | grep -c Connected)" 
+  if [[ "${#peer_nodes_mounts[*]}" -ne "${connected_nodes}" ]]; then
+    fatal "Not all nodes in gluster are in connected state"
+  fi
+
+  # create gluster volume
+  gluster volume create "$play_id" \
+    replica "$connected_nodes" transport tcp \
+    "${connected_nodes[*]}" || fatal "Could not create gluster volume"
+}
