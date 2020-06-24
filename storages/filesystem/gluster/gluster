@@ -87,6 +87,9 @@ _setup_gluster()
     replica "$connected_nodes" transport tcp \
     ${peer_nodes_mounts[*]} || fatal "Could not create gluster volume"
 
+  gluster volume set "$vol_name" features.shard enable
+  gluster volume set "$vol_name" features.shard-block-size 512MB
   gluster volume start "$vol_name" || fatal "Could not start gluster volume:$vol_name"
   gluster volume status "$vol_name"
+
 }
