@@ -3,6 +3,7 @@
 install_dependencies()
 {
   yum -y install tmux jq inotify-tools vim nc
+  yum -y install iptables-rules && systemctl enable iptables
 }
 
 _stage_finished()

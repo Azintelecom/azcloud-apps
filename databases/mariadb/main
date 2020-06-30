@@ -7,10 +7,15 @@ azapps_databases_mariadb()
   export http_proxy="$PROXY"
   export https_proxy="$PROXY"
 
+  AZCLOUD_APP_STORAGE="/var/lib/mysql"
+  export AZCLOUD_APP_STORAGE
+
   DB_PASS="$(_get_db_args)"
   export DB_PASS
 
-  _setup_firewall_and_selinux \
+  _setup_app_storage 'mariadb' \
+    && _stage_finished setup_app_storage
+  _setup_firewall_and_selinux '3306:tcp' 'mysqld_t:permissive' \
     && _stage_finished firewall_and_selinux_setup
   _install_and_setup_mariadb \
     && _stage_finished install_and_setup_mariadb

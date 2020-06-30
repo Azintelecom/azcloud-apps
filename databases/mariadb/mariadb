@@ -9,14 +9,6 @@ _get_db_args()
   echo "$db_pass"
 }
 
-_setup_firewall_and_selinux()
-{
-  
-  iptables -I INPUT -p tcp --dport 3306 -m comment --comment "added by AzCloudApps"
-  sed -i '/^SELINUX=/s/enforcing/permissive/g' /etc/selinux/config
-  setenforce 0
-}
-
 _install_and_setup_mariadb()
 {
   local mysql_curr_password; mysql_curr_password=""
