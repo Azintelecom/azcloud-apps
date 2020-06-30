@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+
+install_and_run_nfs_server()
+{
+  _setup_nfs_storage
+  _setup_firewall_and_selinux_nfs
+  _install_and_setup_nfs 
+}
+
+azapps_storages_filesystem_nfs()
+{
+  export HTTP_PROXY="$PROXY"
+  export HTTPS_PROXY="$PROXY"
+  export http_proxy="$PROXY"
+  export https_proxy="$PROXY"
+
+  export NFS_STORAGE="/nfs/nfs"
+  install_and_run_nfs_server
+}

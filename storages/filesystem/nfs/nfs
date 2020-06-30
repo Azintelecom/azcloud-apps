@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-_setup_firewall_and_selinux_nfs4()
+_setup_firewall_and_selinux_nfs()
 {
   if systemctl is-active firewalld | grep -q active; then
     firewall-cmd --zone=public --add-service=nfs
@@ -13,9 +13,9 @@ _setup_firewall_and_selinux_nfs4()
    semanage permissive -a nfsd_t
 }
 
-_setup_nfs4_storage()
+_setup_nfs_storage()
 {
-  local storage_vol; storage_vol="nfs4"
+  local storage_vol; storage_vol="nfs"
   local storage_group; storage_group="${storage_vol}_storage"
   local storage_dev; storage_dev="/dev/${storage_group}/${storage_vol}"
 
@@ -34,19 +34,22 @@ $storage_dev $NFS_STORAGE ext4 defaults 0 0
 EOF
 }
 
-_install_and_setup_nfs4()
+_install_and_setup_nfs()
 {
   local subnet
   subnet="$(ip -o -f inet addr show | awk '/scope global/ {print $4}')"
   subnet="${subnet%.*}.0/24"
 
   yum -y install nfs-utils
+  cat <<EOF > /etc/exports.d/azapps.exports
+$NFS_STORAGE $subnet(rw,sync,no_root_squash)
+EOF
 
   chmod -R 755 "$NFS_STORAGE"
   chown nfsnobody:nfsnobody "$NFS_STORAGE"
 
-  cat <<EOF > /etc/exports.d/azapps.exports
-$NFS_STORAGE $subnet(rw,sync,no_root_squash)
-EOF
+  systemctl enable --now rpcbind
   systemctl enable --now nfs-server
+  systemctl enable --now nfs-lock
+  systemctl enable --now nfs-idmap
 }
