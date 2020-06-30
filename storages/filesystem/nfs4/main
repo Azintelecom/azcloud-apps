@@ -15,6 +15,6 @@ azapps_storages_filesystem_nfs4()
   export http_proxy="$PROXY"
   export https_proxy="$PROXY"
 
-  export NFS_STORAGE="/nfs/nfs4"
+  export NFS_STORAGE="/nfs4"
   install_and_run_nfs4_server
 }

@@ -3,13 +3,18 @@
 _setup_firewall_and_selinux_nfs()
 {
   if systemctl is-active firewalld | grep -q active; then
-    firewall-cmd --permanent --zone=public --add-service=nfs
+    firewall-cmd --permanent --zone=public --add-service=nfs3
     firewall-cmd --permanent --zone=public --add-service=mountd
     firewall-cmd --permanent --zone=public --add-service=rpc-bind
     firewall-cmd --reload
   elif command -v iptables >& /dev/null; then
     iptables -I INPUT -p tcp --dport 2049 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
-   fi
+    iptables -I INPUT -p udp --dport 2049 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
+    iptables -I INPUT -p tcp --dport 111 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
+    iptables -I INPUT -p udp --dport 111 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
+    iptables -I INPUT -p tcp --dport 20048 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
+    iptables -I INPUT -p udp --dport 20048 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
+  fi
 
    # set domain to permissive mode
    semanage permissive -a nfsd_t
@@ -44,11 +49,12 @@ _install_and_setup_nfs()
 
   yum -y install nfs-utils
   cat <<EOF > /etc/exports.d/azapps.exports
-$NFS_STORAGE $subnet(rw,sync,no_root_squash)
+$NFS_STORAGE/share $subnet(rw,sync,no_root_squash)
 EOF
 
-  chmod -R 755 "$NFS_STORAGE"
-  chown nfsnobody:nfsnobody "$NFS_STORAGE"
+  mkdir -p "$NFS_STORAGE"/share
+  chmod -R 755 "$NFS_STORAGE"/share
+  chown nfsnobody:nfsnobody "$NFS_STORAGE"/share
 
   systemctl enable --now rpcbind
   systemctl enable --now nfs-server

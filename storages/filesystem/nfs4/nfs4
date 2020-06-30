@@ -42,11 +42,12 @@ _install_and_setup_nfs4()
 
   yum -y install nfs-utils
 
-  chmod -R 755 "$NFS_STORAGE"
-  chown nfsnobody:nfsnobody "$NFS_STORAGE"
+  mkdir -p "$NFS_STORAGE"/share
+  chmod -R 755 "$NFS_STORAGE"/share
+  chown nfsnobody:nfsnobody "$NFS_STORAGE"/share
 
   cat <<EOF > /etc/exports.d/azapps.exports
-$NFS_STORAGE $subnet(rw,sync,no_root_squash)
+$NFS_STORAGE/share $subnet(rw,sync,no_root_squash)
 EOF
   systemctl enable --now nfs-server
 }
