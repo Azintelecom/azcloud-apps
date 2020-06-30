@@ -43,13 +43,9 @@ EOF
 
 _install_and_setup_nfs()
 {
-  local subnet
-  subnet="$(ip -o -f inet addr show | awk '/scope global/ {print $4}')"
-  subnet="${subnet%.*}.0/24"
-
   yum -y install nfs-utils
   cat <<EOF > /etc/exports.d/azapps.exports
-$NFS_STORAGE/share $subnet(rw,sync,no_root_squash)
+$NFS_STORAGE/share *(rw,sync,no_root_squash,insecure)
 EOF
 
   mkdir -p "$NFS_STORAGE"/share
