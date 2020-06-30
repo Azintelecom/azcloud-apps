@@ -22,6 +22,7 @@ main()
   app_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >& /dev/null && pwd )"
   app_proxy="$(cat "$app_dir"/.proxy)"
   export PROXY="${app_proxy}"
+  load_module "${app_dir}"/_functions
   load_module "${app_dir}"/"${app_path}"
   run_module=${app_path////_}; run_module=${run_module//+/_}
   azapps_"$run_module" >> /tmp/azcloud-apps/app.log 2>&1
