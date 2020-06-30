@@ -3,8 +3,8 @@
 _setup_firewall_and_selinux_nfs4()
 {
   if systemctl is-active firewalld | grep -q active; then
-    firewall-cmd --zone=public --add-service=nfs
-    firewall-cmd --runtime-to-permanent
+    firewall-cmd --permanent --zone=public --add-service=nfs
+    firewall-cmd --reload
   elif command -v iptables >& /dev/null; then
     iptables -I INPUT -p tcp --dport 2049 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
    fi
