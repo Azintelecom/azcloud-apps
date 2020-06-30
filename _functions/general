@@ -1,7 +1,21 @@
 #!/usr/bin/env bash
 
-
 install_dependencies()
 {
   yum -y install tmux jq inotify-tools vim nc
+}
+
+_stage_finished()
+{
+  local stage; stage="$1"; shift
+  local info; info=("$@")
+
+  [ -d "$AZCLOUD_APPS_STAGES" ] || mkdir -p "$AZCLOUD_APPS_STAGES"
+
+  echo "${info[*]}" > "$AZCLOUD_APPS_STAGES"/"$stage"
+}
+
+_stage_info()
+{ 
+  echo "$*" >&2
 } 

@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
+_get_db_args()
+{
+  local apps_args db_pass
+  apps_args=$(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d)
+  db_pass="$(jq -r .apps.config.dbpass <<< "$apps_args")"
+  [[ $db_pass == "null" ]] && db_pass="$(_get_play_id)"
+  echo "$db_pass"
+}
+
 _setup_firewall_and_selinux()
 {
   
@@ -10,11 +19,8 @@ _setup_firewall_and_selinux()
 
 _install_and_setup_mariadb()
 {
+  local mysql_curr_password; mysql_curr_password=""
   yum -y install mariadb mariadb-server expect
-
-  local mysql_root_password="$1"; shift
-  local mysql_curr_password=""
-
   systemctl enable --now mariadb
 
   secure_mysql=$(expect -c "
@@ -25,9 +31,9 @@ send \"$mysql_curr_password\r\"
 expect \"Set root password?*\"
 send \"y\r\"
 expect \"New password*\"
-send \"$mysql_root_password\r\"
+send \"$DB_PASS\r\"
 expect \"Re-enter new password*\"
-send \"$mysql_root_password\r\"
+send \"$DB_PASS\r\"
 expect \"Remove anonymous users?\"
 send \"y\r\"
 expect \"Disallow root login remotely?\"
@@ -48,7 +54,7 @@ _finish()
 ##################################
  AzCloudApp info:
  APP MariaDB has been installed
- DBPASS: "$1"
+ DBPASS: "$DB_PASS"
 ##################################
 EOF
 }

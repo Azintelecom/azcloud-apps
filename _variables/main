@@ -1,0 +1,2 @@
+AZCLOUD_APPS_HOME="/tmp/azcloud_apps"
+AZCLOUD_APPS_STAGES="$AZCLOUD_APPS_HOME/stages"
