@@ -5,12 +5,6 @@ export HTTPS_PROXY="$PROXY"
 export http_proxy="$PROXY"
 export https_proxy="$PROXY"
 
-fatal()
-{
-  echo "ERROR: $*" >&2
-  exit 1
-}
-
 _setup_firewall_and_selinux()
 {
   # set selinux to permissiv

@@ -6,8 +6,3 @@ _throw_error()
   [ -z "$value" ] && fatal "Could not found ${!value}"
 }
 
-fatal()
-{
-  echo "ERROR: $*" >&2
-  exit 1
-}

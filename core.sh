@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
 
-fatal()
-{
-  echo "ERROR: $*" >&2
-  exit 1
-}
-
 load_module()
 {
   local app_path; app_path="$1"
