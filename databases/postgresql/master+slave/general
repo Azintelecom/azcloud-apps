@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-_install_deps()
-{
-  yum -y install tmux jq vim nc
-}
-
 _install_avahi_centos()
 {
   yum -y install avahi-daemon avahi-tools

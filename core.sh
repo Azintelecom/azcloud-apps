@@ -18,6 +18,7 @@ main()
   export PROXY="${app_proxy}"
   load_module "${app_dir}"/_functions
   load_module "${app_dir}"/"${app_path}"
+  install_dependencies || fatal "Could not install dependencies"
   run_module=${app_path////_}; run_module=${run_module//+/_}
   azapps_"$run_module" >> /tmp/azcloud-apps/app.log 2>&1
 }

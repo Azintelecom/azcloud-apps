@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+
+install_dependencies()
+{
+  yum -y install tmux jq inotify-tools vim nc
+} 
