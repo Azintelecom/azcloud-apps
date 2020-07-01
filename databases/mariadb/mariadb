@@ -2,9 +2,8 @@
 
 _get_db_args()
 {
-  local apps_args db_pass
-  apps_args=$(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d)
-  db_pass="$(jq -r .apps.config.dbpass <<< "$apps_args")"
+  local db_pass
+  db_pass="$(_get_app_config | jq -r '.Apps.Config.db_pass')"
   [[ $db_pass == "null" ]] && db_pass="$(_get_play_id)"
   echo "$db_pass"
 }
