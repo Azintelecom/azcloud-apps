@@ -101,4 +101,10 @@ _get_play_nodes()
   while read -r node; do
     echo "$node"
   done < <(grep "$play_id" /etc/hosts | awk '{print $NF}')
-} 
+}
+
+_get_app_config()
+{ 
+  [ -f "$AZCLOUD_APPS_CONFIG" ] || { echo; return; } 
+  cat "$AZCLOUD_APPS_CONFIG"
+}
