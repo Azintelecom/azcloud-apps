@@ -33,10 +33,14 @@ _get_nodes_addresses()
 _get_play_id()
 {
   local play_id
-  play_id="$(hostname -s)"
-  play_id="${play_id#*-}"
-  play_id="${play_id%%-*}"
-  echo "$play_id"
+  if [ -f "$AZCLOUD_APPS_PLAYID" ]; then
+    cat "$AZCLOUD_APPS_PLAYID"
+  else
+    play_id="$(hostname -s)"
+    play_id="${play_id#*-}"
+    play_id="${play_id%%-*}"
+    echo "$play_id"
+  fi
 }
 
 _run_on_node()
