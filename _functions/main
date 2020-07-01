@@ -31,7 +31,7 @@ fatal()
 _get_nodes_addresses()
 {
   local addresses;
-  while IFS='' read -r a; do addresses+=("$a"); done < <(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d | jq -r .vms[].net[].address)
+  while IFS='' read -r a; do addresses+=("$a"); done < <(get_app_config | jq -r .Vms[].Ifaces[0].Address)
   [ -z "${addresses[*]}" ] && fatal "Could not get nodes addresses"
   echo "${addresses[*]}"
 }
@@ -52,25 +52,26 @@ _get_play_id()
 _run_on_node()
 {
   local node; node="$1"; shift
-  local comm; comm="$@"
+  local comm; comm="$*"
   ssh=();ssh=(ssh)
-  ssh+=(-o ControlPath=~/.ssh/cm-%r@%h:%p)
-  ssh+=(-o ControlMaster=auto)
-  ssh+=(-o ControlPersist=10m)
-  ssh+=(-o BatchMode=yes)
-  ssh+=(-o PreferredAuthentications=publickey)
-  ssh+=(-o PubkeyAuthentication=yes)
-  ssh+=(-o StrictHostKeyChecking=no)
+  ssh+=(-o "ControlPath=~/.ssh/cm-%r@%h:%p")
+  ssh+=(-o "ControlMaster=auto")
+  ssh+=(-o "ControlPersist=10m")
+  ssh+=(-o "BatchMode=yes")
+  ssh+=(-o "PreferredAuthentications=publickey")
+  ssh+=(-o "PubkeyAuthentication=yes")
+  ssh+=(-o "StrictHostKeyChecking=no")
   ssh+=(root@"$node" -t "$comm")
-  ${ssh[@]}
+  "${ssh[@]}"
 }
 
 _update_host_file()
 {
-  local nodes; nodes=($(_get_nodes_addresses))
+  nodes=()
+  while IFS='' read -r line; do nodes+=("$line"); done < <(_get_nodes_addresses)
   local hostname
   echo "# azcloud-apps" >> /etc/hosts
-  for node in ${nodes[@]}; do
+  for node in "${nodes[@]}"; do
     hostname="$(_run_on_node "$node" hostname -s)"
     echo "$node" "$hostname" "${hostname%%-*}" >> /etc/hosts
   done

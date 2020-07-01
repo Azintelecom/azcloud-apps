@@ -1,34 +1,11 @@
 #!/usr/bin/env bash
 
-_setup_firewall_and_selinux()
+_get_db_args()
 {
-  if systemctl is-active firewalld | grep -q active; then
-    firewall-cmd --permanent --zone=public --add-port=3306/tcp
-    firewall-cmd --permanent --zone=public --add-port=4567/tcp
-    firewall-cmd --permanent --zone=public --add-port=4568/tcp
-    firewall-cmd --permanent --zone=public --add-port=4444/tcp
-    firewall-cmd --permanent --zone=public --add-port=4567/udp
-  elif command -v iptables >& /dev/null; then
-    iptables -I INPUT -p tcp --dport 3306 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
-    iptables -I INPUT -p tcp --dport 4567 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT 
-    iptables -I INPUT -p tcp --dport 4568 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
-    iptables -I INPUT -p tcp --dport 4444 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
-    iptables -I INPUT -p udp --dport 4567 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
- fi
-
-  # set domain to permissive mode
-  semanage permissive -a mysqld_t
-}
-
-_setup_galera_storage()
-{
-  local disks; disks=($(lsblk | grep sd[b-z] | awk '{print $1}' | sed 's@^@/dev/@g'))
-  [ -z "$disks" ] && { echo "no disk found"; return 1; }
-   vgcreate galera_storage ${disks[*]}
-   lvcreate -n mariadb -l 100%VG galera_storage
-   mkfs.ext4 /dev/galera_storage/mariadb 
-   mkdir -p /var/lib/mysql
-   mount /dev/galera_storage/mariadb /var/lib/mysql
+  local db_pass
+  db_pass="$(_get_app_config | jq -r '.Apps.Config.db_pass')"
+  [[ $db_pass == "null" ]] && db_pass="$(_get_play_id)"
+  echo "$db_pass"
 }
 
 _install_galera_centos()
@@ -47,7 +24,8 @@ EOF
 
 _set_mariadb_password()
 {
-  local mysql_root_password="$(_get_db_pass)"
+  local mysql_root_password
+  mysql_root_password="$(_get_db_pass)"
   mysql -u root -p' ' -e "FLUSH PRIVILEGES;
 SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$mysql_root_password');
 DELETE FROM mysql.global_priv WHERE User='';"
@@ -69,7 +47,7 @@ EOF
 _set_galera_config()
 {
   local nodes; nodes="$(_get_nodes_addresses | sed 's@ @,@g')"
-  local cluster_name; cluster_name="$(hostname -s | awk -F- '{print $(NF-2)}')"
+  local cluster_name; cluster_name="$(_get_play_id)"
   local hostname; hostname="$(hostname -s)"
   local address; address="$(ip addr sh ens192 | awk '/inet /{print $2}' | cut -d/ -f1)"
 
@@ -109,14 +87,15 @@ _ready_to_join_cluster()
 
 _start_mariadb_on_all_nodes()
 {
-  local play_id; play_id="$(_get_play_id)"
+  local app_name; app_name="$(get_config | jq -r .Apps.Name)"
+  local app_path; app_path="$AZCLOUD_APPS_HOME/$app_name"
 
-  local nodes; nodes=($(_get_nodes))
-  for node in ${nodes[@]}; do
-   if ! _is_it_first "$node"; then
-      _run_on_node "$node" "tmux new-session -d \
-        'until [ -f /tmp/azcloud-apps/databases/galera/join.sh ] || [ $((++_c)) -gt 120 ]; do sleep 5; done;
-         bash /tmp/azcloud-apps/databases/galera/join.sh'"
+  IFS=" " read -r nodes <<< "$(get_nodes)"
+  for node in "${nodes[@]}"; do
+  if ! _is_it_first "$node"; then
+    _run_on_node "$node" "tmux new-session -d \
+        'until [ -f $app_path/join.sh ] || [ $((++_c)) -gt 120 ]; do sleep 5; done;
+         bash $app_path/join.sh'"
     fi
   done
 }
@@ -139,11 +118,11 @@ _get_cluster_size()
 
 _finish()
 {
-  local nodes; nodes=($(_get_nodes))
+  IFS=" " read -r nodes <<< "$(get_nodes)"
   if ! _is_it_first "${HOSTNAME%%-*}"; then
     return
   fi
-  until [ ${#nodes[*]} -eq $(_get_cluster_size) ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
+  until [ ${#nodes[*]} -eq "$(_get_cluster_size)" ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
   cat <<EOF
 +-------------------------------------+
   Cluster setup finished!
