@@ -90,7 +90,8 @@ _start_mariadb_on_all_nodes()
   local app_name; app_name="$(get_config | jq -r .Apps.Name)"
   local app_path; app_path="$AZCLOUD_APPS_HOME/$app_name"
 
-  IFS=" " read -r nodes <<< "$(get_nodes)"
+  nodes=()
+  while IFS='' read -r line; do nodes+=("$line"); done < <(get_nodes)
   for node in "${nodes[@]}"; do
   if ! _is_it_first "$node"; then
     _run_on_node "$node" "tmux new-session -d \
