@@ -18,11 +18,11 @@ main()
   app_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >& /dev/null && pwd )"
   load_module "${app_dir}"/_variables
   load_module "${app_dir}"/_functions
-  load_module "${app_dir}"/"${app_path}"
   app_proxy="$(cat "$app_dir"/.proxy)"
   export PROXY="${app_proxy}"
   set_proxy
   install_dependencies || fatal "Could not install dependencies"
+  load_module "${app_dir}"/"${app_path}"
   run_module=${app_path////_}; run_module=${run_module//+/_}
   azapps_"$run_module" >> "$AZCLOUD_APPS_HOME"/app.log 2>&1
 }
