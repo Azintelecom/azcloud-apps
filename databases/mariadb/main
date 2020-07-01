@@ -2,16 +2,17 @@
 
 azapps_databases_mariadb()
 {
-  export HTTP_PROXY="$PROXY"
-  export HTTPS_PROXY="$PROXY"
-  export http_proxy="$PROXY"
-  export https_proxy="$PROXY"
 
   AZCLOUD_APPS_STORAGE="/var/lib/mysql"
   export AZCLOUD_APPS_STORAGE
 
   DB_PASS="$(_get_db_args)"
   export DB_PASS
+
+  PROXY="$(get_proxy)"
+  export PROXY
+
+  set_proxy
 
   _setup_app_storage 'mariadb' \
     && _stage_finished setup_app_storage

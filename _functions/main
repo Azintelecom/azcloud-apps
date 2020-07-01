@@ -16,6 +16,12 @@ unset_proxy()
   unset HTTPS_PROXY
 }
 
+get_proxy()
+{
+  [ -f "$AZCLOUD_APPS_PROXY" ] || { echo; return; }
+  echo "$AZCLOUD_APPS_PROXY"
+}
+
 fatal()
 {
   echo "ERROR: $*" >&2
