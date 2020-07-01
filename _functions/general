@@ -2,6 +2,7 @@
 
 install_dependencies()
 {
+  yum -y clean all
   yum -y install tmux inotify-tools vim nc
   yum -y install iptables-services && systemctl enable --now iptables
 }
