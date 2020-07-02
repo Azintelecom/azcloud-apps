@@ -31,7 +31,7 @@ fatal()
 _get_nodes_addresses()
 {
   local addresses;
-  while IFS='' read -r a; do addresses+=("$a"); done < <(get_app_config | jq -r .Vms[].Ifaces[0].Address)
+  while IFS='' read -r a; do addresses+=("$a"); done < <(_get_app_config | jq -r '.vms[].net[0].address')
   [ -z "${addresses[*]}" ] && fatal "Could not get nodes addresses"
   echo "${addresses[*]}"
 }
