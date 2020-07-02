@@ -90,7 +90,7 @@ is_it_first()
   local node; node="$1"; shift
   local first; first=1
   local address
-  address="$(_node_to_address "$node")"
+  address="$(node_to_address "$node")"
   local first_address
   first_address="$(_get_first_node)"
   if [ "$address" = "$first_address" ]; then
@@ -132,7 +132,7 @@ node_to_address()
 
 get_play_nodes()
 {
-  local play_id; play_id="$(_get_play_id)"
+  local play_id; play_id="$(get_play_id)"
   while read -r node; do
     echo "$node"
   done < <(grep "$play_id" /etc/hosts | awk '{print $NF}')
@@ -147,7 +147,7 @@ get_app_config()
 _get_first_node()
 {
   (
-    for a in $(get_nodes_addresses); do
+    for a in $(_get_nodes_addresses); do
       echo "$a"
     done
   ) | sort -V | head -n1
