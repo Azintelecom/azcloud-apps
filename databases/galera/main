@@ -3,24 +3,27 @@
 
 azapps_databases_galera()
 {
+  AZCLOUD_APPS_STORAGE="/var/lib/mysql"
+  export AZCLOUD_APPS_STORAGE
+
   PROXY="$(get_proxy)"
   export PROXY
   set_proxy
 
-  _update_host_file \
-    && _stage_finished update_host_file
-  _setup_app_storage 'galera' \
-    && _stage_finished setup_app_storage
-  _setup_firewall_and_selinux '3306:tcp,4567:tcp,4568:tcp,4444:tcp,4567:udp' 'mysqld_t:permissive' \
-    && _stage_finished setup_firewall_and_selinux
+  update_host_file \
+    && stage_finished update_host_file
+  setup_app_storage 'galera' \
+    && stage_finished setup_app_storage
+  setup_firewall_and_selinux '3306:tcp,4567:tcp,4568:tcp,4444:tcp,4567:udp' 'mysqld_t:permissive' \
+    && stage_finished setup_firewall_and_selinux
   _install_galera_centos \
-    && _stage_finished install_galera_centos
+    && stage_finished install_galera_centos
   _tune_mariadb_systemd \
-    && _stage_finished tune_mariadb_systemd
+    && stage_finished tune_mariadb_systemd
   _set_mariadb_password \
-    && _stage_finished set_mariadb_password
+    && stage_finished set_mariadb_password
   _set_galera_config \
-    && _stage_finished set_galera_config
+    && stage_finished set_galera_config
   _setup_galera_cluster \
     && _stage_finished setup_galera_cluster
   _finish

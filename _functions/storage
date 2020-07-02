@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-_setup_app_storage()
+setup_app_storage()
 {
   local storage_vol; storage_vol="$1"; shift
   local storage_group; storage_group="${storage_vol}_storage"

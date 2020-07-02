@@ -7,7 +7,7 @@ install_dependencies()
   yum -y install iptables-services && systemctl enable --now iptables
 }
 
-_stage_finished()
+stage_finished()
 {
   local stage; stage="$1"; shift
   local info; info=("$@")

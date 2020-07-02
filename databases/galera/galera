@@ -46,8 +46,8 @@ EOF
 
 _set_galera_config()
 {
-  local nodes; nodes="$(_get_nodes_addresses | sed 's@ @,@g')"
-  local cluster_name; cluster_name="$(_get_play_id)"
+  local nodes; nodes="$(get_nodes_addresses | sed 's@ @,@g')"
+  local cluster_name; cluster_name="$(get_play_id)"
   local hostname; hostname="$(hostname -s)"
   local address; address="$(ip addr sh ens192 | awk '/inet /{print $2}' | cut -d/ -f1)"
 
@@ -82,7 +82,7 @@ EOF
 
 _ready_to_join_cluster()
 {
-  touch /tmp/azcloud-apps/ready
+  touch "$AZCLOUD_APPS_HOME"/ready
 }
 
 _start_mariadb_on_all_nodes()
@@ -93,8 +93,8 @@ _start_mariadb_on_all_nodes()
   nodes=()
   while IFS='' read -r line; do nodes+=("$line"); done < <(get_nodes)
   for node in "${nodes[@]}"; do
-  if ! _is_it_first "$node"; then
-    _run_on_node "$node" "tmux new-session -d \
+  if ! is_it_first "$node"; then
+    run_on_node "$node" "tmux new-session -d \
         'until [ -f $app_path/join.sh ] || [ $((++_c)) -gt 120 ]; do sleep 5; done;
          bash $app_path/join.sh'"
     fi
@@ -104,7 +104,7 @@ _start_mariadb_on_all_nodes()
 _setup_galera_cluster()
 {
   systemctl stop mariadb && _ready_to_join_cluster
-  if _is_it_first "${HOSTNAME%%-*}"; then
+  if is_it_first "$(hostname -s)"; then
     galera_new_cluster && _start_mariadb_on_all_nodes
   fi
 }
@@ -120,14 +120,14 @@ _get_cluster_size()
 _finish()
 {
   IFS=" " read -r nodes <<< "$(get_nodes)"
-  if ! _is_it_first "${HOSTNAME%%-*}"; then
+  if ! is_it_first "$(hostname -s)"; then
     return
   fi
   until [ ${#nodes[*]} -eq "$(_get_cluster_size)" ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
   cat <<EOF
 +-------------------------------------+
   Cluster setup finished!
-  Cluster name: $(_get_play_id)
+  Cluster name: $(get_play_id)
   Cluster nodes: $(_get_cluster_size)
   Date: $(date)
 +-------------------------------------+

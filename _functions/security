@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-_setup_firewall_and_selinux()
+setup_firewall_and_selinux()
 {
   local fw_rules; fw_rules="$1"; shift
   local sl_rules; sl_rules="$1"; shift

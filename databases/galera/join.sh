@@ -2,7 +2,7 @@
 
 _join_starting()
 {
-  cat <<EOF > /tmp/azcloud-apps/join.log
+  cat <<EOF > ${AZCLOUD_APPS_LOG}/join.log
 > Joining cluster:
     host: $hostname
     time: $(date)
@@ -12,17 +12,17 @@ EOF
 
 _join_success()
 {
-  sed -i '/join/s/started/success/g' /tmp/azcloud-apps/join.log
+  sed -i '/join/s/started/success/g' "$AZCLOUD_APSS_HOME"/join.log
 }
 
 _join_error()
 {
-  sed -i '/join/s/started/error/g' /tmp/azcloud-apps/join.log
+  sed -i '/join/s/started/error/g' "$AZCLOUD_APPS_HOME"/join.log
 }
 
 _join_cluster()
 {
-  until [ -f /tmp/azcloud-apps/ready ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
+  until [ -f "$AZCLOUD_APPS_HOME"/ready ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
   systemctl start mariadb
 }
 

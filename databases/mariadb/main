@@ -14,11 +14,11 @@ azapps_databases_mariadb()
 
   set_proxy
 
-  _setup_app_storage 'mariadb' \
-    && _stage_finished setup_app_storage
-  _setup_firewall_and_selinux '3306:tcp' 'mysqld_t:permissive' \
-    && _stage_finished firewall_and_selinux_setup
+  setup_app_storage 'mariadb' \
+    && stage_finished setup_app_storage
+  setup_firewall_and_selinux '3306:tcp' 'mysqld_t:permissive' \
+    && stage_finished firewall_and_selinux_setup
   _install_and_setup_mariadb \
-    && _stage_finished install_and_setup_mariadb
+    && stage_finished install_and_setup_mariadb
   _finish 
 }

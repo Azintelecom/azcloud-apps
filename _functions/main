@@ -19,7 +19,7 @@ unset_proxy()
 get_proxy()
 {
   [ -f "$AZCLOUD_APPS_PROXY" ] || { echo; return; }
-  echo "$AZCLOUD_APPS_PROXY"
+  cat "$AZCLOUD_APPS_PROXY"
 }
 
 fatal()
@@ -28,17 +28,17 @@ fatal()
   exit 1
 }
 
-_get_nodes_addresses()
+get_nodes_addresses()
 {
   local addresses;
-  while IFS='' read -r a; do addresses+=("$a"); done < <(_get_app_config | jq -r '.vms[].net[0].address')
+  while IFS='' read -r a; do addresses+=("$a"); done < <(get_app_config | jq -r '.vms[].net[0].address')
   [ -z "${addresses[*]}" ] && fatal "Could not get nodes addresses"
   for a in  ${addresses[*]}; do
     printf "%s\\n" "$a"
   done
 }
 
-_get_play_id()
+get_play_id()
 {
   local play_id
   if [ -f "$AZCLOUD_APPS_PLAYID" ]; then
@@ -51,7 +51,7 @@ _get_play_id()
   fi
 }
 
-_run_on_node()
+run_on_node()
 {
   local node; node="$1"; shift
   local comm; comm="$*"
@@ -67,7 +67,7 @@ _run_on_node()
   "${ssh[@]}"
 }
 
-_update_host_file()
+update_host_file()
 {
   echo "# azcloud-apps" >> /etc/hosts
   for addr in $(_get_nodes_addresses); do
@@ -77,20 +77,41 @@ _update_host_file()
   done
 }
 
-_is_it_first()
+is_it_first()
 {
   local node; node="$1"; shift
   local first; first=1
-  if [ "${node:(-1)}" = 1 ]; then
+  local address
+  address="$(_node_to_address "$node")"
+  local first_address
+  first_address="$(_get_first_node)"
+  if [ "$address" = $first_address ]; then
     first=0
   fi
   return $first
 }
 
-_get_nodes()
+_get_address()
+{
+  local node; node="$1"
+  getent hosts "$node" | awk '{print $1}'
+}
+
+get_my_address()
+{
+  local node; node="$(hostname -s)"
+  local my_address
+  my_address="$(getent hosts "$node" | awk '{print $1}')"
+  echo "$my_address"
+}
+
+get_nodes()
 {
   local play_id; play_id="$(_get_play_id)"
-  grep "$play_id" /etc/hosts | awk '{print $NF}'
+  while read -r node; do
+    echo "$node"
+  done < <(grep "$play_id" /etc/hosts | awk '{print $NF}')
+
 }
 
 _get_nodes_ips()
@@ -102,8 +123,9 @@ _get_nodes_ips()
 _node_to_address()
 {
   local node; node="$1"; shift
-  local play_id; play_id="$(_get_play_id)"
-  grep "$node-$play_id" /etc/hosts | awk '{print $1}'
+  local address
+  address="$(_get_address "$node")"
+  echo "$address"
 }
 
 _get_play_nodes()
@@ -114,7 +136,7 @@ _get_play_nodes()
   done < <(grep "$play_id" /etc/hosts | awk '{print $NF}')
 }
 
-_get_app_config()
+get_app_config()
 { 
   [ -f "$AZCLOUD_APPS_CONFIG" ] || { echo; return; } 
   cat "$AZCLOUD_APPS_CONFIG"
@@ -123,7 +145,7 @@ _get_app_config()
 _get_first_node()
 {
   (
-    for a in $(_get_nodes_addresses); do
+    for a in $(get_nodes_addresses); do
       echo "$a"
     done
   ) | sort -V | head -n1
