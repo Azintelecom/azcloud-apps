@@ -3,8 +3,8 @@
 _get_db_args()
 {
   local db_pass
-  db_pass="$(_get_app_config | jq -r '.apps.config.db_pass')"
-  [[ $db_pass == "null" ]] && db_pass="$(_get_play_id)"
+  db_pass="$(get_app_config | jq -r '.apps.config.db_pass')"
+  [[ $db_pass == "null" ]] && db_pass="$(get_play_id)"
   echo "$db_pass"
 }
 

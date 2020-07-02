@@ -25,6 +25,6 @@ azapps_databases_galera()
   _set_galera_config \
     && stage_finished set_galera_config
   _setup_galera_cluster \
-    && _stage_finished setup_galera_cluster
+    && stage_finished setup_galera_cluster
   _finish
 }

@@ -28,7 +28,7 @@ fatal()
   exit 1
 }
 
-get_nodes_addresses()
+_get_nodes_addresses()
 {
   local addresses;
   while IFS='' read -r a; do addresses+=("$a"); done < <(get_app_config | jq -r '.vms[].net[0].address')
@@ -36,6 +36,14 @@ get_nodes_addresses()
   for a in  ${addresses[*]}; do
     printf "%s\\n" "$a"
   done
+}
+
+get_play_addresses()
+{
+  local play_id; play_id="$(get_play_id)"
+  while read -r node; do
+    echo "$node"
+  done < <(grep "$play_id" /etc/hosts | awk '{print $1}')
 }
 
 get_play_id()
@@ -71,7 +79,7 @@ update_host_file()
 {
   echo "# azcloud-apps" >> /etc/hosts
   for addr in $(_get_nodes_addresses); do
-    hostname="$(_run_on_node "$addr" 'hostname -f; hostname -s')"
+    hostname="$(run_on_node "$addr" 'hostname -f; hostname -s')"
     # shellcheck disable=SC2086
     echo "$addr" $hostname >> /etc/hosts
   done
@@ -85,7 +93,7 @@ is_it_first()
   address="$(_node_to_address "$node")"
   local first_address
   first_address="$(_get_first_node)"
-  if [ "$address" = $first_address ]; then
+  if [ "$address" = "$first_address" ]; then
     first=0
   fi
   return $first
@@ -105,22 +113,16 @@ get_my_address()
   echo "$my_address"
 }
 
-get_nodes()
+get_play_nodes()
 {
-  local play_id; play_id="$(_get_play_id)"
+  local play_id; play_id="$(get_play_id)"
   while read -r node; do
     echo "$node"
   done < <(grep "$play_id" /etc/hosts | awk '{print $NF}')
 
 }
 
-_get_nodes_ips()
-{
-  local play_id; play_id="$(_get_play_id)"
-  grep "$play_id" /etc/hosts | awk '{print $3,$1}'
-}
-  
-_node_to_address()
+node_to_address()
 {
   local node; node="$1"; shift
   local address
@@ -128,7 +130,7 @@ _node_to_address()
   echo "$address"
 }
 
-_get_play_nodes()
+get_play_nodes()
 {
   local play_id; play_id="$(_get_play_id)"
   while read -r node; do

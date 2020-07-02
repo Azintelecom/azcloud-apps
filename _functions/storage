@@ -6,7 +6,7 @@ setup_app_storage()
   local storage_group; storage_group="${storage_vol}_storage"
   local storage_dev; storage_dev="/dev/${storage_group}/${storage_vol}"
 
-  [ -z "$AZCLOUD_APPS_STORAGE" ] && fatal "MINIO_STORAGE not defined"
+  [ -z "$AZCLOUD_APPS_STORAGE" ] && fatal "AZCLOUD_APPS_STORAGE not defined"
 
   mkdir -p "$AZCLOUD_APPS_STORAGE"
 

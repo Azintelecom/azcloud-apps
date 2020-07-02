@@ -3,8 +3,8 @@
 _get_db_args()
 {
   local db_pass
-  db_pass="$(_get_app_config | jq -r '.apps.config.db_pass')"
-  [[ $db_pass == "null" ]] && db_pass="$(_get_play_id)"
+  db_pass="$(get_app_config | jq -r '.apps.config.db_pass')"
+  [[ $db_pass == "null" ]] && db_pass="$(get_play_id)"
   echo "$db_pass"
 }
 
@@ -46,10 +46,10 @@ EOF
 
 _set_galera_config()
 {
-  local nodes; nodes="$(get_nodes_addresses)"
+  local nodes; nodes="$(get_play_nodes)"
   local cluster_name; cluster_name="$(get_play_id)"
   local hostname; hostname="$(hostname -s)"
-  local address; address="$(ip addr sh ens192 | awk '/inet /{print $2}' | cut -d/ -f1)"
+  local address; address="$(get_my_address)"
 
   cat <<EOF > /etc/my.cnf.d/galera.cnf
 [mysqld]
