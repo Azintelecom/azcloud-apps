@@ -46,7 +46,7 @@ EOF
 
 _set_galera_config()
 {
-  local nodes; nodes="$(get_nodes_addresses | sed 's@ @,@g')"
+  local nodes; nodes="$(get_nodes_addresses)"
   local cluster_name; cluster_name="$(get_play_id)"
   local hostname; hostname="$(hostname -s)"
   local address; address="$(ip addr sh ens192 | awk '/inet /{print $2}' | cut -d/ -f1)"
@@ -68,7 +68,7 @@ wsrep_provider=/usr/lib64/galera-4/libgalera_smm.so
 
 # Galera Cluster Configuration
 wsrep_cluster_name="$cluster_name"
-wsrep_cluster_address="gcomm://$nodes"
+wsrep_cluster_address="gcomm://${nodes[*]}"
 
 # Galera Synchronization Configuration
 wsrep_sst_method=rsync
