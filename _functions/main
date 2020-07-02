@@ -71,7 +71,7 @@ _update_host_file()
 {
   echo "# azcloud-apps" >> /etc/hosts
   for addr in $(_get_nodes_addresses); do
-    hostname="$(_run_on_node "$addr" "hostname -f | tr '\n' ' '; hostname -s")"
+    hostname="$(_run_on_node "$addr" 'hostname -f; hostname -s')"
     # shellcheck disable=SC2086
     echo "$addr" $hostname >> /etc/hosts
   done
