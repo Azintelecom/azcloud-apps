@@ -52,9 +52,9 @@ get_play_id()
   if [ -f "$AZCLOUD_APPS_PLAYID" ]; then
     cat "$AZCLOUD_APPS_PLAYID"
   else
-    play_id="$(hostname -s)"
-    play_id="${play_id#*-}"
-    play_id="${play_id%%-*}"
+    play_id="$(hostname -f)"
+    play_id="${play_id#*.}"
+    play_id="${play_id%.*}"
     echo "$play_id"
   fi
 }
@@ -128,14 +128,6 @@ node_to_address()
   local address
   address="$(_get_address "$node")"
   echo "$address"
-}
-
-get_play_nodes()
-{
-  local play_id; play_id="$(get_play_id)"
-  while read -r node; do
-    echo "$node"
-  done < <(grep "$play_id" /etc/hosts | awk '{print $NF}')
 }
 
 get_app_config()
