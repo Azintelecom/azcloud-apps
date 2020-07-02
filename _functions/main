@@ -33,7 +33,9 @@ _get_nodes_addresses()
   local addresses;
   while IFS='' read -r a; do addresses+=("$a"); done < <(_get_app_config | jq -r '.vms[].net[0].address')
   [ -z "${addresses[*]}" ] && fatal "Could not get nodes addresses"
-  echo "${addresses[*]}"
+  for a in  ${addresses[*]}; do
+    printf "%s\\n" "$a"
+  done
 }
 
 _get_play_id()
@@ -61,19 +63,17 @@ _run_on_node()
   ssh+=(-o "PreferredAuthentications=publickey")
   ssh+=(-o "PubkeyAuthentication=yes")
   ssh+=(-o "StrictHostKeyChecking=no")
-  ssh+=(root@"$node" -t "$comm")
+  ssh+=(root@"$node" "$comm")
   "${ssh[@]}"
 }
 
 _update_host_file()
 {
-  nodes=()
-  while IFS='' read -r line; do nodes+=("$line"); done < <(_get_nodes_addresses)
-  local hostname
   echo "# azcloud-apps" >> /etc/hosts
-  for node in "${nodes[@]}"; do
-    hostname="$(_run_on_node "$node" hostname -s)"
-    echo "$node" "$hostname" "${hostname%%-*}" >> /etc/hosts
+  for addr in $(_get_nodes_addresses); do
+    hostname="$(_run_on_node "$addr" "hostname -f | tr '\n' ' '; hostname -s")"
+    # shellcheck disable=SC2086
+    echo "$addr" $hostname >> /etc/hosts
   done
 }
 
@@ -119,3 +119,13 @@ _get_app_config()
   [ -f "$AZCLOUD_APPS_CONFIG" ] || { echo; return; } 
   cat "$AZCLOUD_APPS_CONFIG"
 }
+
+_get_first_node()
+{
+  (
+    for a in $(_get_nodes_addresses); do
+      echo "$a"
+    done
+  ) | sort -V | head -n1
+}
+
