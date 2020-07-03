@@ -26,10 +26,15 @@ _join_cluster()
   systemctl start mariadb
 }
 
-main()
+_main()
 {
   _join_starting
   _join_cluster && _join_success || _join_error
+}
+
+main()
+{
+  echo "$AZCLOUD_APPS_HOME" > /tmp/a
 }
 
 main
