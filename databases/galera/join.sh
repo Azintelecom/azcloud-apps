@@ -2,9 +2,9 @@
 
 _join_starting()
 {
-  cat <<EOF > ${AZCLOUD_APPS_LOG}/join.log
+  cat <<EOF > "${AZCLOUD_APPS_HOME}"/join.log
 > Joining cluster:
-    host: $hostname
+    host: $(hostname -s)
     time: $(date)
     join: started
 EOF

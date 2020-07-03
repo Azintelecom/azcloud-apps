@@ -98,7 +98,7 @@ _start_mariadb_on_all_nodes()
   if ! is_it_first "$node"; then
     run_on_node "$node" "tmux new-session -d \
         'until [ -f $app_path/join.sh ] || [ $((++_c)) -gt 120 ]; do sleep 5; done;
-         bash $app_path/join.sh'"
+         bash -x $app_path/join.sh > /tmp/a'"
     fi
   done
 }
