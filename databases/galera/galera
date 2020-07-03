@@ -47,7 +47,8 @@ EOF
 _set_galera_config()
 {
   nodes=()
-  while IFS='' read -r line; do nodes+=("$line"); done <<< "$(get_play_addresses)"
+  # shellcheck disable=SC2054
+  while IFS='' read -r line; do nodes+=("$line",); done <<< "$(get_play_addresses)"
   local cluster_name; cluster_name="$(get_play_id)"
   local hostname; hostname="$(hostname -s)"
   local address; address="$(get_my_address)"
