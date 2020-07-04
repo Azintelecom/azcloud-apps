@@ -48,9 +48,7 @@ _get_nodes_addresses_from_avahi()
 
 _get_nodes_count_from_userdata()
 {
-  get_app_config \
-    | jq -r '.vms[]' \
-    | wc -l
+  get_app_config | jq -r '.vms[] | length'
 }
 
 _get_nodes_addresses()
