@@ -57,16 +57,13 @@ _get_nodes_count_from_userdata()
 _get_nodes_addresses()
 {
   local config_nodes; config_nodes="$(_get_nodes_count_from_userdata)"
-  #local avahi_nodes
 
   if command -v avahi-browse >& /dev/null; then
-    while true; do
-       if [[ "$(_get_nodes_addresses_from_avahi 2>/dev/null | wc -l)" -eq "$config_nodes" ]]; then
-        _get_nodes_addresses_from_avahi
-        break
-      fi
+    until [[ $(_get_nodes_addresses_from_avahi 2>/dev/null | wc -l) -eq $config_nodes ]]; do
       sleep 5
+      continue
     done
+    _get_nodes_addresses_from_avahi
   else
     _get_nodes_addresses_from_userdata
   fi
