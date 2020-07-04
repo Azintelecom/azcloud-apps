@@ -61,6 +61,8 @@ _get_nodes_addresses()
 
   if command -v avahi-browse >& /dev/null; then
     until [[ $(_get_nodes_addresses_from_avahi 2>/dev/null | wc -l) -eq $config_nodes ]]; do
+      _get_nodes_addresses_from_avahi
+      avahi-browse -actrp
       sleep 5
       continue
     done
