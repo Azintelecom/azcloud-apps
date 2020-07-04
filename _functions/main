@@ -56,7 +56,7 @@ _get_nodes_count_from_userdata()
 _get_nodes_addresses()
 {
   local config_nodes; config_nodes="$(_get_nodes_count_from_userdata)"
-  local avahi_nodes; avahi_nodes=0
+  local avahi_nodes
 
   if command -v avahi-browse >& /dev/null; then
     while true; do
