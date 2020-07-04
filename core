@@ -23,7 +23,7 @@ main()
   app_proxy="$(cat "$app_dir"/.proxy)"
   export PROXY="${app_proxy}"
   set_proxy
-  install_dependencies || fatal "Could not install dependencies"
+  setup_dependencies || fatal "Could not setup dependencies"
 
   load_module "${app_dir}"/"${app_path}"
   run_module=${app_path////_}; run_module=${run_module//+/_}

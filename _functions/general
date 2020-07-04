@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
-install_dependencies()
+setup_dependencies()
 {
   yum -y clean all
   yum -y install tmux inotify-tools vim nc
   yum -y install iptables-services && systemctl enable --now iptables
+  timedatectl set-timezone "$AZCLOUD_APPS_TIMEZONE"
 }
 
 stage_finished()
