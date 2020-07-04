@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -x
 
 set_proxy()
 {
@@ -42,6 +41,10 @@ _get_nodes_addresses_from_userdata()
 _get_nodes_addresses_from_avahi()
 {
   local play_id; play_id="$(get_play_id)"
+
+  if ! systemctl is-active avahi-daemon | grep -q active; then
+    return
+  fi
 
   avahi-browse -actrp \
     | grep ^= \
