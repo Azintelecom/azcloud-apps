@@ -42,11 +42,7 @@ _get_nodes_addresses_from_avahi()
 {
   local play_id; play_id="$(get_play_id)"
 
-  systemctl status avahi-daemon
-
-  if ! systemctl is-active avahi-daemon | grep -q active; then
-    return
-  fi
+  systemctl restart avahi-daemon
 
   avahi-browse -actrp \
     | grep ^= \
@@ -68,6 +64,7 @@ _get_nodes_addresses()
     until [[ $(_get_nodes_addresses_from_avahi 2>/dev/null | wc -l) -eq $config_nodes ]]; do
       _get_nodes_addresses_from_avahi
       avahi-browse -actrp
+      systemctl status avahi-daemon >> /tmp/a
       sleep 5
       continue
     done
