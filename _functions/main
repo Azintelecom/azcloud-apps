@@ -40,9 +40,11 @@ _get_nodes_addresses_from_userdata()
 
 _get_nodes_addresses_from_avahi()
 {
+  local play_id; play_id="$(get_play_id)"
+
   avahi-browse -atrp \
     | grep ^= \
-    | grep -E "${hostname}-${play_id}" \
+    | grep -E "${play_id}" \
     | awk -F';' '{print $8}'
 }
 
@@ -53,10 +55,7 @@ _get_nodes_count_from_userdata()
 
 _get_nodes_addresses()
 {
-  local play_id; play_id="$(get_play_id)"
-  local hostname; hostname="$(hostname -s)"
-  local config_nodes
-  config_nodes="$(_get_nodes_count_from_userdata)"
+  local config_nodes; config_nodes="$(_get_nodes_count_from_userdata)"
   local avahi_nodes; avahi_nodes=0
 
   if command -v avahi-browse >& /dev/null; then
