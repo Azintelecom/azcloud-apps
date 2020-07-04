@@ -61,6 +61,14 @@ _get_nodes_addresses()
   if command -v avahi-browse >& /dev/null; then
     while true; do
       avahi_nodes="$(_get_nodes_addresses_from_avahi 2>/dev/null | wc -l)"
+      echo '$avahi_nodes' >> /tmp/avahi_nodes
+      echo "$avahi_nodes" >> /tmp/avahi_nodes
+      echo '_get_nodes_addresses_from_avahi' >> /tmp/avahi_nodes
+      _get_nodes_addresses_from_avahi >> /tmp/nodes
+      echo '_get_nodes_addresses_from_avahi | wc -l' >> /tmp/avahi_nodes
+      _get_nodes_addresses_from_avahi | wc -l >> /tmp/nodes
+      echo '_get_nodes_addresses_from_avahi 2>/dev/null | wc -l' >> /tmp_avahi_nodes
+      _get_nodes_addresses_from_avahi 2>/dev/null | wc -l >> /tmp/avahi_nodes
       if [[ "$avahi_nodes" -eq "$config_nodes" ]]; then
         _get_nodes_addresses_from_avahi
         break
