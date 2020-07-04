@@ -42,10 +42,11 @@ _get_nodes_addresses_from_avahi()
 {
   local play_id; play_id="$(get_play_id)"
 
-  avahi-browse -atrp \
+  avahi-browse -acftrp \
     | grep ^= \
     | grep -E "${play_id}" \
-    | awk -F';' '{print $8}'
+    | awk -F';' '{print $8}' \
+    | sort -V
 }
 
 _get_nodes_count_from_userdata()
@@ -60,8 +61,6 @@ _get_nodes_addresses()
 
   if command -v avahi-browse >& /dev/null; then
     while true; do
-      #avahi_nodes="$(_get_nodes_addresses_from_avahi 2>/dev/null | wc -l)"
-      #if [[ "$avahi_nodes" -eq "$config_nodes" ]]; then
        if [[ "$(_get_nodes_addresses_from_avahi 2>/dev/null | wc -l)" -eq "$config_nodes" ]]; then
         _get_nodes_addresses_from_avahi
         break
