@@ -52,6 +52,6 @@ publish-workstation=yes
 
 [rlimits]
 EOF
-  systemctl restart avahi-daemon
+  systemctl enable --now avahi-daemon
 }
 
