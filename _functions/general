@@ -6,6 +6,7 @@ setup_dependencies()
   yum -y install tmux inotify-tools vim nc
   yum -y install iptables-services && systemctl enable --now iptables
   timedatectl set-timezone "$AZCLOUD_APPS_TIMEZONE"
+  _setup_avahi_centos
 }
 
 stage_finished()
@@ -18,18 +19,22 @@ stage_finished()
   echo "${info[*]}" > "$AZCLOUD_APPS_STAGES"/"$stage"
 }
 
-_stage_info()
+stage_info()
 { 
   echo "$*" >&2
 }
 
-_install_avahi_centos()
+_setup_avahi_centos()
 {
-  yum -y install avahi-daemon avahi-tools
+  local hostname; hostname="$(hostname -s)"
+  local play_id; play_id="$(get_play_id)"
+
+  yum -y install avahi avahi-tools
 
   mv /etc/avahi/{avahi-daemon.conf,avahi-daemon.conf.orig}
-  cat <<'EOF' > /etc/avahi/avahi-daemon.conf
+  cat <<EOF > /etc/avahi/avahi-daemon.conf
 [server]
+host-name=${hostname}-${play_id}
 use-ipv4=yes
 use-ipv6=no
 deny-interfaces=docker0
@@ -48,20 +53,5 @@ publish-workstation=yes
 [rlimits]
 EOF
   systemctl restart avahi-daemon
-
-  cat <<'EOF' > /etc/systemd/system/avahi-alias@.service
-[Unit]
-Description=Publish %I as alias for %H.local via mdns
-Wants=avahi-daemon.service
-
-[Service]
-Type=simple
-ExecStart=/bin/bash -c "/usr/bin/avahi-publish -a -R %I $(avahi-resolve -4 -n %H.local | cut -f 2)"
-
-[Install]
-WantedBy=multi-user.target
-EOF
-  local short; short="$(hostname -s)"; short="${short%%-*}"
-  systemctl enable --now avahi-alias@"$short".local.service
 }
 

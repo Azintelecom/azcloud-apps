@@ -28,7 +28,7 @@ fatal()
   exit 1
 }
 
-_get_nodes_addresses()
+_get_nodes_addresses_from_userdata()
 {
   local addresses;
   while IFS='' read -r a; do addresses+=("$a"); done < <(get_app_config | jq -r '.vms[].net[0].address')
@@ -36,6 +36,42 @@ _get_nodes_addresses()
   for a in  ${addresses[*]}; do
     printf "%s\\n" "$a"
   done
+}
+
+_get_nodes_addresses_from_avahi()
+{
+  avahi-browse -atrp \
+    | grep ^= \
+    | grep -E "${hostname}-${play_id}" \
+    | awk -F';' '{print $8}'
+}
+
+_get_nodes_count_from_userdata()
+{
+  get_app_config \
+    | jq -r '.vms[]' \
+    | wc -l
+}
+
+_get_nodes_addresses()
+{
+  local play_id; play_id="$(get_play_id)"
+  local hostname; hostname="$(hostname -s)"
+  local config_nodes avahi_nodes
+  config_nodes="$(_get_nodes_count_from_userdata)"
+
+  if command -v avahi-browse >& /dev/null; then
+    while true; do
+      avahi_nodes="$(_get_nodes_addresses_from_avahi | wc -l)"
+      if [[ "$avahi_nodes" -eq "$config_nodes" ]]; then
+        _get_nodes_addresses_from_avahi
+        break
+      fi
+      sleep 5
+    done
+  else
+    _get_nodes_addresses_from_userdata
+  fi
 }
 
 get_play_addresses()
