@@ -61,7 +61,7 @@ _get_nodes_addresses()
   local temp_file; temp_file="$(mktemp /tmp/XXXXXXXXXXXXX)"
 
   while IFS='' read -r node; do
-    run_on_node "$node" "hostname -i | awk '{print \$NF}'" 2>/dev/null >> "$temp_file"
+    run_on_node "$node" "hostname -i | awk '{print \$NF}'" 2>/dev/null >> "$temp_file" &
   done <<< "$(_get_address_range)"
 
   cat "$temp_file"
