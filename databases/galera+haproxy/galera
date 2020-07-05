@@ -95,7 +95,7 @@ _start_mariadb_on_all_nodes()
   nodes=()
   while IFS='' read -r line; do nodes+=("$line"); done < <(get_play_nodes)
   for node in "${nodes[@]}"; do
-  if ! is_it_first "$node"; then
+  if ! is_it_first "$node" && ! _is_it_haproxy "$node"; then
     run_on_node "$node" "tmux new-session -d \
         'until [ -f $app_path/join.sh ] || [ $((++_c)) -gt 120 ]; do sleep 5; done;
          AZCLOUD_APPS_HOME=$AZCLOUD_APPS_HOME bash -x $app_path/join.sh >> ${AZCLOUD_APPS_HOME}/log'"
