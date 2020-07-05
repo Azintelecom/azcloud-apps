@@ -58,20 +58,26 @@ _get_nodes_count_from_userdata()
 
 _get_nodes_addresses()
 {
-  local config_nodes; config_nodes="$(_get_nodes_count_from_userdata)"
+  local temp_file; temp_file="$(mktemp /tmp/XXXXXXXXXXXXX)"
 
-  if command -v avahi-browse >& /dev/null; then
-    until [[ $(_get_nodes_addresses_from_avahi 2>/dev/null | wc -l) -eq $config_nodes ]]; do
-      _get_nodes_addresses_from_avahi
-      avahi-browse -actrp
-      systemctl status avahi-daemon >> /tmp/a
-      sleep 5
-      continue
-    done
-    _get_nodes_addresses_from_avahi
-  else
-    _get_nodes_addresses_from_userdata
-  fi
+  while IFS='' read -r node; do
+    run_on_node "$node" "hostname -i | awk '{print \$NF}'" 2>/dev/null >> "$temp_file"
+  done <<< "$(_get_address_range)"
+
+  cat "$temp_file"
+  rm -rf "$temp_file"
+  #if command -v avahi-browse >& /dev/null; then
+  #  until [[ $(_get_nodes_addresses_from_avahi 2>/dev/null | wc -l) -eq $config_nodes ]]; do
+  #    _get_nodes_addresses_from_avahi
+  #    avahi-browse -actrp
+  #    systemctl status avahi-daemon >> /tmp/a
+  #    sleep 5
+  #    continue
+  #  done
+  #  _get_nodes_addresses_from_avahi
+  #else
+  #  _get_nodes_addresses_from_userdata
+  #fi
 }
 
 get_play_addresses()
@@ -107,6 +113,8 @@ run_on_node()
   ssh+=(-o "PreferredAuthentications=publickey")
   ssh+=(-o "PubkeyAuthentication=yes")
   ssh+=(-o "StrictHostKeyChecking=no")
+  ssh+=(-o "ConnectTimeout=1")
+  ssh+=(-o "ConnectionAttempts=1")
   ssh+=(root@"$node" "$comm")
   "${ssh[@]}"
 }
@@ -170,6 +178,39 @@ get_app_config()
 { 
   [ -f "$AZCLOUD_APPS_CONFIG" ] || { echo; return; } 
   cat "$AZCLOUD_APPS_CONFIG"
+}
+
+_get_default_address()
+{
+  local address;
+  address="$(ip route get 1.1.1.1 | grep dev | awk '{print $7}')"
+  [ -z "$address" ] && fatal "Could not get default address"
+  echo "$address"
+}
+
+_get_default_iface()
+{
+  local iface;
+  iface="$(ip route get 1.1.1.1 | grep dev | awk '{print $5}')"
+  [ -z "$iface" ] && fatal "Could not get default interface"
+  echo "$iface"
+}
+
+_get_default_address_full()
+{
+  local iface; iface="$(get_default_iface)"
+  local address
+  address="$(ip addr sh "$iface" scope global | awk '/inet/{print $2}')"
+  [ -z "$address" ] && fatal "Could not get default full address"
+  echo "$address"
+}
+  
+_get_address_range()
+{
+  local address; address="$(_get_default_address_full)"
+  nmap -sL "$address" \
+    | awk '/Nmap scan report/{print $NF}' \
+    | sed 's@(@@g; s@)@@g' 
 }
 
 _get_first_node()
