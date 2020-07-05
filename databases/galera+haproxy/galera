@@ -22,13 +22,18 @@ EOF
   systemctl enable --now mariadb
 }
 
-_set_mariadb_password()
+_set_mariadb_password_and_haproxy_user()
 {
-  local mysql_root_password
-  mysql_root_password="$(_get_db_pass)"
+  local mysql_root_password; mysql_root_password="$(_get_db_pass)"
+  local subnet; subnet="$(get_my_address)"; subnet="${subnet%.*}"
+  local play_id; play_id="$(get_play_id)"
   mysql -u root -p' ' -e "FLUSH PRIVILEGES;
-SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$mysql_root_password');
-DELETE FROM mysql.global_priv WHERE User='';"
+SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${mysql_root_password}');
+CREATE USER 'haproxy_check'@'${subnet}.%';
+CREATE USER 'haproxy_root'@'${subnet}.%' IDENTIFIED BY '$play_id';
+GRANT ALL PRIVILEGES ON *.* TO 'haproxy_root'@'${subnet}%';
+DELETE FROM mysql.global_priv WHERE User='';
+FLUSH PRIVILEGES;"
 }
 
 _tune_mariadb_systemd()

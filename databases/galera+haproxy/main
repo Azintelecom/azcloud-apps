@@ -26,8 +26,8 @@ azapps_databases_galera_haproxy()
       && stage_finished install_galera_centos
     _tune_mariadb_systemd \
       && stage_finished tune_mariadb_systemd
-    _set_mariadb_password \
-      && stage_finished set_mariadb_password
+    _set_mariadb_password_and_haproxy_user \
+      && stage_finished set_mariadb_password_and_haproxy_user
     _set_galera_config \
       && stage_finished set_galera_config
     _setup_galera_cluster \

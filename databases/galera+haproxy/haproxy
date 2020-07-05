@@ -61,5 +61,6 @@ EOF
     fi
   done <<< "$(get_play_nodes)"
 
+  unset_proxy
   systemctl enable --now haproxy
 }
