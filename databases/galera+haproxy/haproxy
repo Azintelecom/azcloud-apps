@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
 
-_get_haproxy_node()
+_get_haproxy_address()
 {
-  get_app_config | jq -r '.apps.config.haproxy[0]'
+  local address;
+  address="$(get_app_config | jq -r '.apps.config.haproxy[0]')"
+  [ -z "$address" ] && fatal "Could not get haproxy address from apps.config.haproxy"
+  echo "$address"
 }
 
 _is_it_haproxy()
 {
   local node; node="$1"; shift
-  local haproxy_node; haproxy_node="$(_get_haproxy_node)"
+  local address; address="$(node_to_address "$node")"
+  local haproxy_address; haproxy_address="$(_get_haproxy_address)"
   local haproxy; haproxy=1
-  if [ "$haproxy_node" == "$node" ]; then
+  if [ "$haproxy_address" == "$address" ]; then
     haproxy=0
   fi
   return $haproxy
