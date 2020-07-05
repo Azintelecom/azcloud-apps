@@ -18,10 +18,8 @@ First list all available apps:
 azin apps list
 ```
 
-Create galera cluster from 3 nodes and total 200GB space for database.
-
 ```
-azin apps deploy --name databases/galera --size 3 --storage 200
+azin apps deploy --app PATH_TO_APP_FILE
 ```
 
 
