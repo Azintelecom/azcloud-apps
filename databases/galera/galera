@@ -121,7 +121,8 @@ _get_cluster_size()
 
 _finish()
 {
-  IFS=" " read -r nodes <<< "$(get_play_nodes)"
+  nodes=()
+  while IFS='' read -r n; do nodes+=("$n"); done <<< "$(get_play_nodes)"
   if ! is_it_first "$(hostname -s)"; then
     return
   fi
