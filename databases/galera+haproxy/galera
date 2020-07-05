@@ -121,11 +121,12 @@ _get_cluster_size()
 
 _finish()
 {
-  IFS=" " read -r nodes <<< "$(get_play_nodes)"
+  nodes=()
+  while IFS='' read -r n; do nodes+=("$n"); done <<< "$(get_play_nodes)"
   if ! is_it_first "$(hostname -s)"; then
     return
   fi
-  until [ ${#nodes[*]:1} -eq "$(_get_cluster_size)" ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
+  until [ $((${#nodes[*]}-1)) -eq "$(_get_cluster_size)" ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
   cat <<EOF
 +-------------------------------------+
   Cluster setup finished!
