@@ -6,7 +6,10 @@ setup_dependencies()
   yum -y install tmux inotify-tools vim nc nmap
   yum -y install iptables-services && systemctl enable --now iptables
   timedatectl set-timezone "$AZCLOUD_APPS_TIMEZONE"
-  setup_firewall_and_selinux '5353:udp' && _setup_avahi_centos
+
+  # avahi disable for now
+  # because of bug in avahi-browse
+  #setup_firewall_and_selinux '5353:udp' && _setup_avahi_centos
 }
 
 stage_finished()
