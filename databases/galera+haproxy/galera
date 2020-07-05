@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-_get_db_args()
+_get_db_pass()
 {
   local db_pass
   db_pass="$(get_app_config | jq -r '.apps.config.db_pass')"
@@ -125,7 +125,7 @@ _finish()
   if ! is_it_first "$(hostname -s)"; then
     return
   fi
-  until [ ${#nodes[*]} -eq "$(_get_cluster_size)" ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
+  until [ ${#nodes[*]:1} -eq "$(_get_cluster_size)" ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
   cat <<EOF
 +-------------------------------------+
   Cluster setup finished!

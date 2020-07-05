@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-_get_db_args()
+_get_db_pass()
 {
   local db_pass
   db_pass="$(get_app_config | jq -r '.apps.config.db_pass')"

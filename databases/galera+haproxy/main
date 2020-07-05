@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-azapps_databases_galera()
+azapps_databases_galera_haproxy()
 {
   AZCLOUD_APPS_STORAGE="/var/lib/mysql"
   export AZCLOUD_APPS_STORAGE
