@@ -198,7 +198,7 @@ _get_default_iface()
 
 _get_default_address_full()
 {
-  local iface; iface="$(get_default_iface)"
+  local iface; iface="$(_get_default_iface)"
   local address
   address="$(ip addr sh "$iface" scope global | awk '/inet/{print $2}')"
   [ -z "$address" ] && fatal "Could not get default full address"
