@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-_get_haproxy_address()
+_get_haproxy_node()
 {
-  get_app_config | jq -r '.apps.config.haproxy'
+  get_app_config | jq -r '.apps.config.haproxy[0]'
 }
 
 _is_it_haproxy()
