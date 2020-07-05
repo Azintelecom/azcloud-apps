@@ -65,7 +65,7 @@ _get_nodes_addresses()
       run_on_node "$node" "hostname -i | awk '{print \$NF}'" 2>/dev/null >> "$temp_file" &
     done <<< "$(_get_address_range)"
     sleep 2
-    if [[ "$(wc -l "$temp_file")" -eq "$(_get_nodes_count_from_userdata)" ]]; then
+    if [[ "$(wc -l "$temp_file" | awk '{print $1}')" -eq "$(_get_nodes_count_from_userdata)" ]]; then
       break
     fi
     rm -rf "$temp_file"
