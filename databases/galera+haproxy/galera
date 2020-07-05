@@ -31,7 +31,7 @@ _set_mariadb_password_and_haproxy_user()
 SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${mysql_root_password}');
 CREATE USER 'haproxy_check'@'${subnet}.%';
 CREATE USER 'haproxy_root'@'${subnet}.%' IDENTIFIED BY '$play_id';
-GRANT ALL PRIVILEGES ON *.* TO 'haproxy_root'@'${subnet}%';
+GRANT ALL PRIVILEGES ON *.* TO 'haproxy_root'@'${subnet}.%';
 DELETE FROM mysql.global_priv WHERE User='';
 FLUSH PRIVILEGES;"
 }
