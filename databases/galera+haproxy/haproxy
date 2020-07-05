@@ -59,7 +59,7 @@ EOF
     server $node $address:3306 check
 EOF
     fi
-  done
+  done <<< "$(get_play_nodes)"
 
   systemctl enable --now haproxy
 }
