@@ -3,7 +3,6 @@
 
 azapps_databases_galera_haproxy()
 {
-  set -x
   AZCLOUD_APPS_STORAGE="/var/lib/mysql"
   export AZCLOUD_APPS_STORAGE
 

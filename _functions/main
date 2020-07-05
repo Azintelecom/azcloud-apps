@@ -58,12 +58,18 @@ _get_nodes_count_from_userdata()
 
 _get_nodes_addresses()
 {
-  local temp_file; temp_file="$(mktemp /tmp/nodes.XXXXXXXXXXXXX)"
-
-  while IFS='' read -r node; do
-    run_on_node "$node" "hostname -i | awk '{print \$NF}'" 2>/dev/null >> "$temp_file" &
-  done <<< "$(_get_address_range)"
-  sleep 1
+  local temp_file; 
+  while true; do
+    temp_file="$(mktemp /tmp/nodes.XXXXXXXXXXXXX)"
+    while IFS='' read -r node; do
+      run_on_node "$node" "hostname -i | awk '{print \$NF}'" 2>/dev/null >> "$temp_file" &
+    done <<< "$(_get_address_range)"
+    sleep 2
+    if [[ "$(wc -l "$temp_file")" -eq "$(_get_nodes_count_from_userdata)" ]]; then
+      break
+    fi
+    rm -rf "$temp_file"
+  done
   sort -V "$temp_file"
   rm -rf "$temp_file"
 }
