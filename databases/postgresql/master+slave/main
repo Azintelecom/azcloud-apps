@@ -16,7 +16,7 @@ azapps_databases_postgresql_master_slave()
   setup_firewall_and_selinux '5432:tcp' 'postgresql_t:permissive' \
     && stage_finished setup_firewall_and_selinux 
   _install_and_setup_pgsql \
-    && install_and_setup_pgsql
+    && stage_finished install_and_setup_pgsql
 
   if _am_i_master; then
     _setup_pgsql_master \

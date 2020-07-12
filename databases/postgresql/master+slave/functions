@@ -13,7 +13,7 @@ _get_slave_address()
     done
   ) | sort -V \
     | sed -n 2p \
-    | xargs -n1 -I@ node_to_address @
+    | xargs -n1 -I@ bash -c 'node_to_address "@"'
 }
 
 _am_i_master()
