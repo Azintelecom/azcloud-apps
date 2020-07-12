@@ -13,7 +13,7 @@ _install_docker_compose()
   docker_compose_bin="/usr/local/bin/docker-compose"
 
   curl -L "$docker_compose_url" -o "$docker_compose_bin"
-  chmod +x "$docker_compose_url"
+  chmod +x "$docker_compose_bin"
   ln -s "$docker_compose_bin" "${docker_compose_bin/local\//}"
 }
 
