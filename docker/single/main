@@ -2,10 +2,15 @@
 
 azapps_docker_single()
 {
+  AZCLOUD_APPS_STORAGE="/var/lib/docker"
+  export AZCLOUD_APPS_STORAGE
+
   PROXY="$(get_proxy)"
   export PROXY
   set_proxy
-
+ 
+  setup_app_storage 'docker' \
+    && stage_finished setup_app_storage
   setup_firewall_and_selinux '' 'selinux:permissive' \
     && stage_finished setup_firewall_and_selinux
   _install_docker \
