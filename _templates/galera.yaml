@@ -58,3 +58,5 @@ apps:
   name: databases/galera
   config:
     dbpass: DB_PASSWORD(eg: superpass)
+    databases_galera_version:
+    

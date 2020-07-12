@@ -149,7 +149,7 @@ is_it_first()
 {
   local node; node="$1"; shift
   local first; first=1
-  local first_node; first_node="$(_get_first_node)"
+  local first_node; first_node="$(get_first_node)"
   if [ "$node" = "$first_node" ]; then
     first=0
   fi
@@ -226,7 +226,7 @@ _get_address_range()
     | sed 's@(@@g; s@)@@g' 
 }
 
-_get_first_node()
+get_first_node()
 {
   (
     for a in $(get_play_nodes); do
@@ -234,4 +234,5 @@ _get_first_node()
     done
   ) | sort -V | head -n1
 }
+
 

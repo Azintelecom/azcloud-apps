@@ -2,17 +2,24 @@
 
 _get_master_address()
 {
+  node_to_address "$(get_first_node)"
+}
+
+_get_slave_address()
+{
   (
-    for a in $(_get_nodes_addresses); do
+    for a in $(get_play_nodes); do
       echo "$a"
     done
-  ) | sort -V | head -n1
+  ) | sort -V \
+    | sed -n 2p \
+    | xargs -n1 -I@ node_to_address @
 }
 
 _am_i_master()
 {
-  local master_address; master_address="$(_get_master_address)"
-  local my_address; my_address="$(hostname -i)"
+  master_address="$(_get_master_address)"
+  local my_address; my_address="$(get_my_address)"
   local exitcode; exitcode=1
 
   if [ "$my_address" == "$master_address" ]; then
@@ -21,11 +28,3 @@ _am_i_master()
   return ${exitcode}
 }
 
-_get_slave_address()
-{
-  (
-    for a in $(_get_nodes_addresses); do
-      echo "$a"
-    done
-  ) | sort -V | tail -n1
-}
