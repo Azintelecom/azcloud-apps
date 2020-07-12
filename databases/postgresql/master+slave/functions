@@ -7,7 +7,7 @@ _get_master_address()
 
 _get_slave_address()
 {
-  node_to_adderss "$(for a in $(get_play_nodes); do echo "$a"; done | sort -V | sed -n 2p)"
+  node_to_address "$(for a in $(get_play_nodes); do echo "$a"; done | sort -V | sed -n 2p)"
 }
 
 _am_i_master()
