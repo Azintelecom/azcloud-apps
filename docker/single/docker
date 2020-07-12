@@ -2,7 +2,7 @@
 
 _install_docker()
 {
-  curl -fsSL "$AZCLOUD_APPS_DOCKER_REPO" | sh
+  curl -fsSL "$AZCLOUD_APPS_DOCKER_URL" | sh
 }
 
 _install_docker_compose()

@@ -28,6 +28,28 @@ fatal()
   exit 1
 }
 
+is_null()
+{
+  local what; what="$1"; shift
+  local exitcode=0
+  if [ "$what" = null ]; then
+    exitcode=1
+  fi
+  return $exitcode
+}
+
+to_upper()
+{
+  local what; what="$1"; shift
+  tr '[:lower:]' '[:upper:]' <<< "$what"
+}
+
+to_lower()
+{
+  local what; what="$1"; shift
+  tr '[:upper:]' '[:lower:]' <<< "$what"
+}
+
 _get_nodes_addresses_from_userdata()
 {
   local addresses;

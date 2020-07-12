@@ -28,6 +28,8 @@ main()
   load_module "${app_dir}"/"${app_path}"
   run_module=${app_path////_}; run_module=${run_module//+/_}
 
+  setup_module_variables "${run_module%%_*}" || fatal "Could not setup variables"
+
   AZCLOUD_APPS_HOME="$app_dir"
   export AZCLOUD_APPS_HOME
 
