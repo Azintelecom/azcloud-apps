@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+_get_master_address()
+{
+  (
+    for a in $(_get_nodes_addresses); do
+      echo "$a"
+    done
+  ) | sort -V | head -n1
+}
+
+_am_i_master()
+{
+  local master_address; master_address="$(_get_master_address)"
+  local my_address; my_address="$(hostname -i)"
+  local exitcode; exitcode=1
+
+  if [ "$my_address" == "$master_address" ]; then
+    exitcode=0
+  fi
+  return ${exitcode}
+}
+

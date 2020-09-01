@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+_get_db_args()
+{
+  local db_pass
+  db_pass="$(get_app_config | jq -r '.apps.config.db_pass')"
+  [[ $db_pass == "null" ]] && db_pass="$(get_play_id)"
+  echo "$db_pass"
+}
+
+_install_and_setup_mariadb()
+{
+  local mysql_curr_password; mysql_curr_password=""
+  yum -y install mariadb mariadb-server expect
+  systemctl enable --now mariadb
+
+  secure_mysql=$(expect -c "
+set timeout 1
+spawn mysql_secure_installation
+expect \"Enter current password for root (enter for none):\"
+send \"$mysql_curr_password\r\"
+expect \"Set root password?*\"
+send \"y\r\"
+expect \"New password*\"
+send \"$DB_PASS\r\"
+expect \"Re-enter new password*\"
+send \"$DB_PASS\r\"
+expect \"Remove anonymous users?\"
+send \"y\r\"
+expect \"Disallow root login remotely?\"
+send \"n\r\"
+expect \"Remove test database and access to it?\"
+send \"y\r\"
+expect \"Reload privilege tables now?\"
+send \"y\r\"
+expect eof
+")
+
+echo "$secure_mysql"
+}
+
+_finish()
+{
+  cat <<EOF
+##################################
+ AzCloudApp info:
+ APP MariaDB has been installed
+ DBPASS: "$DB_PASS"
+##################################
+EOF
+}

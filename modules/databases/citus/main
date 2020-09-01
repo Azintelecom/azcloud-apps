@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+general_prepare_nodes()
+{
+  _install_deps
+  _install_avahi_centos
+  _update_host_file
+}
+
+install_and_setup_citus()
+{
+  _setup_and_install_citus
+  _setup_firewall_and_selinux
+
+  if _am_i_coordinator; then
+    _setup_coordinator_node;
+  fi
+}
+
+azapps_databases_citus()
+{
+  export HTTP_PROXY="$PROXY"
+  export HTTPS_PROXY="$PROXY"
+  export http_proxy="$PROXY"
+  export https_proxy="$PROXY"
+
+  general_prepare_nodes
+  install_and_setup_citus
+}
+

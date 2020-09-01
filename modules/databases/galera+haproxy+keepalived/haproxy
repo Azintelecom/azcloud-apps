@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+_get_haproxy_addresses()
+{
+  local raw_addresses
+  raw_addresses="$(vmtoolsd --cmd "info-get guestinfo.appdata" | base64 -d | jq -r .apps.config.haproxy)"
+  [ -z "$raw_addresses" ] && fatal "Could not get haproxy addresses"
+  IFS=',' read -ra addresses <<< "$raw_addresses"
+  echo "${addresses[@]}"
+}
+
+_is_it_haproxy()
+{
+  local node; node="$1"; shift
+  node="${node%%-*}"; node=$(_node_to_address "$node")
+  local haproxy_addresses; haproxy_addresses=($(_get_haproxy_addresses))
+  local haproxy; haproxy=1
+  for haproxy_address in "${haproxy_addresses[@]}"; do
+    if [ "$haproxy_address" == "$node" ]; then
+      haproxy=0
+    fi
+  done
+  return $haproxy
+}
+
+_am_i_haproxy()
+{
+  _is_it_haproxy "$(hostname -s)"
+}
+
+_am_i_haproxy_master()
+{
+  local my_address; my_address="$(hostname -i)"
+  local haproxy_addresses; haproxy_addresses=($(_get_haproxy_addresses))
+  local master; master=1
+  if [ "$my_address" == "${haproxy_addresses[0]}" ]; then
+    master=0
+  fi
+  return $master
+}
+
+_install_and_setup_haproxy()
+{
+  yum -y install haproxy keepalived
+  mv /etc/haproxy/{haproxy.cfg,haproxy.cfg.orig}
+  cat <<EOF > /etc/haproxy/haproxy.cfg
+global
+    log 127.0.0.1 local0 notice
+    user haproxy
+    group haproxy
+
+defaults
+    log global
+    retries 2
+    timeout connect 3000
+    timeout server 5000
+    timeout client 5000
+
+listen galera-cluster
+    bind 0.0.0.0:3306
+    mode tcp
+    option mysql-check user haproxy_check
+    balance roundrobin
+EOF
+
+  local address
+  for node in $(_get_nodes); do
+    if ! _is_it_haproxy "$node"; then
+      address="$(_node_to_address "$node")"
+      cat <<EOF >> /etc/haproxy/haproxy.cfg
+    server ${node} ${address}:3306 check
+EOF
+    fi
+  done
+
+  systemctl start haproxy
+}
+
+_setup_firewall_and_selinux_haproxy()
+{
+  if systemctl is-active firewalld | grep -q active; then
+    firewall-cmd --permanent --zone=public --add-port=3306/tcp
+  elif command -v iptables >& /dev/null; then
+    iptables -I INPUT -p tcp --dport 3306 -m comment --comment 'added by azcloud-apps' -m state --state NEW -j ACCEPT
+  fi
+  semanage permissive -a haproxy_t
+}
+

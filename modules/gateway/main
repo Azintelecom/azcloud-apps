@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+azapps_network_gateway()
+{
+  :
+}

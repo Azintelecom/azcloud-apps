@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+
+_get_db_pass()
+{
+  local db_pass
+  db_pass="$(get_app_config | jq -r '.apps.config.db_pass')"
+  [[ $db_pass == "null" ]] && db_pass="$(get_play_id)"
+  echo "$db_pass"
+}
+
+_install_galera_centos()
+{
+  cat <<EOF > /etc/yum.repos.d/mariadb.repo
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/${AZCLOUD_APPS_DATABASES_GALERA_VERSION}/centos7-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+  yum makecache --disablerepo='*' --enablerepo='mariadb'
+  yum install -y MariaDB-server MariaDB-client rsync policycoreutils-python
+  systemctl enable --now mariadb
+}
+
+_set_mariadb_password()
+{
+  local mysql_root_password
+  mysql_root_password="$(_get_db_pass)"
+  mysql -u root -p' ' -e "FLUSH PRIVILEGES;
+SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$mysql_root_password');
+DELETE FROM mysql.global_priv WHERE User='';"
+}
+
+_tune_mariadb_systemd()
+{
+  if [ ! -d /etc/systemd/system/mariadb.service.d ]; then
+    mkdir -p /etc/systemd/system/mariadb.service.d
+  fi
+  cat <<'EOF' > /etc/systemd/system/mariadb.service.d/override.conf
+[Service]
+LimitNOFILE=65535
+LimitMEMLOCK=65535
+EOF
+  systemctl daemon-reload
+}
+
+_set_galera_config()
+{
+  nodes=()
+  # shellcheck disable=SC2054
+  while IFS='' read -r line; do nodes+=("$line",); done <<< "$(get_play_addresses)"
+  local cluster_name; cluster_name="$(get_play_id)"
+  local hostname; hostname="$(hostname -s)"
+  local address; address="$(get_my_address)"
+
+  cat <<EOF > /etc/my.cnf.d/galera.cnf
+[mysqld]
+binlog_format=ROW
+default-storage-engine=innodb
+innodb_autoinc_lock_mode=2
+bind-address=0.0.0.0
+ignore-db-dir=lost+found
+max_connections=1024
+max_allowed_packet=536870912 # half of max
+open_files_limit=65536 # can be increased to 1024000
+
+# Galera Provider Configuration
+wsrep_on=ON
+wsrep_provider=/usr/lib64/galera-4/libgalera_smm.so
+
+# Galera Cluster Configuration
+wsrep_cluster_name="$cluster_name"
+wsrep_cluster_address="gcomm://${nodes[*]}"
+
+# Galera Synchronization Configuration
+wsrep_sst_method=rsync
+
+# Galera Node Configuration
+wsrep_node_address="$address"
+wsrep_node_name="$hostname"
+EOF
+
+}
+
+_ready_to_join_cluster()
+{
+  touch "$AZCLOUD_APPS_HOME"/ready
+}
+
+_start_mariadb_on_all_nodes()
+{
+  local app_name; app_name="$(get_app_config | jq -r '.apps.name')"
+  local app_path; app_path="$AZCLOUD_APPS_HOME/$app_name"
+
+  nodes=()
+  while IFS='' read -r line; do nodes+=("$line"); done < <(get_play_nodes)
+  for node in "${nodes[@]}"; do
+  if ! is_it_first "$node"; then
+    run_on_node "$node" "tmux new-session -d \
+        'until [ -f $app_path/join.sh ] || [ $((++_c)) -gt 120 ]; do sleep 5; done;
+         AZCLOUD_APPS_HOME=$AZCLOUD_APPS_HOME bash -x $app_path/join.sh >> ${AZCLOUD_APPS_HOME}/log'"
+    fi
+  done
+}
+
+_setup_galera_cluster()
+{
+  systemctl stop mariadb && _ready_to_join_cluster
+  if is_it_first "$(hostname -s)"; then
+    galera_new_cluster && _start_mariadb_on_all_nodes
+  fi
+}
+
+_get_cluster_size()
+{
+  mysql -u root -p' ' -e "SHOW STATUS LIKE 'wsrep_cluster_size'" \
+    | sed 's/\t/,/g' \
+    | cut -d, -f2 \
+    | tail -1
+}
+
+_finish()
+{
+  nodes=()
+  while IFS='' read -r n; do nodes+=("$n"); done <<< "$(get_play_nodes)"
+  if ! is_it_first "$(hostname -s)"; then
+    return
+  fi
+  until [ ${#nodes[*]} -eq "$(_get_cluster_size)" ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
+  cat <<EOF
++-------------------------------------+
+  Cluster setup finished!
+  Cluster name: $(get_play_id)
+  Cluster nodes: $(_get_cluster_size)
+  Date: $(date)
++-------------------------------------+
+EOF
+}
+ 

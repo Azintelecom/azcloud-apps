@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+_throw_error()
+{
+  local value; value="$1"
+  [ -z "$value" ] && fatal "Could not found ${!value}"
+}
+
