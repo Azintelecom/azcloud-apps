@@ -9,8 +9,8 @@ import (
 func main() {
 	bash, _ := basher.NewContext("/bin/bash", false)
 
-	bash.Source("modules/core", Asset)
-	status, err := bash.Run("core", os.Args[1:])
+	bash.Source("modules/main", Asset)
+	status, err := bash.Run("main", os.Args[1:])
 	if err != nil {
 		log.Fatal(err)
 	}
