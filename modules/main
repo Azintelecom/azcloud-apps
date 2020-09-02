@@ -18,8 +18,8 @@ main()
   app_path="$1"; [ -z "$app_path" ] && { echo "app not found"; exit 1; }
   #app_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >& /dev/null && pwd )"
   app_dir="/tmp/azcloud_apps"
-  load_module "${app_dir}"/_variables
-  load_module "${app_dir}"/_functions
+  load_module "${app_dir}"/modules/_variables
+  load_module "${app_dir}"/modules/_functions
 
   app_proxy="$(cat "$app_dir"/.proxy)"
   export PROXY="${app_proxy}"
