@@ -16,8 +16,8 @@ main()
   local app_path app_dir app_proxy run_module
 
   app_path="$1"; [ -z "$app_path" ] && { echo "app not found"; exit 1; }
-  #app_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >& /dev/null && pwd )"
-  app_dir="/tmp/azcloud_apps"
+  app_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >& /dev/null && pwd )"
+  app_dir="${app_dir}/azcloud_apps"
   load_module "${app_dir}"/modules/_variables
   load_module "${app_dir}"/modules/_functions
 
@@ -26,7 +26,7 @@ main()
   set_proxy
   setup_dependencies || fatal "Could not setup dependencies"
 
-  load_module "${app_dir}"/"${app_path}"
+  load_module "${app_dir}"/modules/"${app_path}"
   run_module=${app_path////_}; run_module=${run_module//+/_}
 
   setup_module_variables "${run_module%%_*}" || fatal "Could not setup variables"

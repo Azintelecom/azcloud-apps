@@ -90,7 +90,7 @@ _ready_to_join_cluster()
 _start_mariadb_on_all_nodes()
 {
   local app_name; app_name="$(get_app_config | jq -r '.apps.name')"
-  local app_path; app_path="$AZCLOUD_APPS_HOME/$app_name"
+  local app_path; app_path="$AZCLOUD_APPS_HOME/modules/$app_name"
 
   nodes=()
   while IFS='' read -r line; do nodes+=("$line"); done < <(get_play_nodes)
