@@ -10,6 +10,9 @@ import (
 func main() {
 	bash, _ := basher.NewContext("/bin/bash", false)
 	bash.ExportFunc("GetMyAddress", utils.GetMyAddress)
+	if 	bash.HandleFuncs(os.Args) {
+		os.Exit(0)
+	}
 	bash.Source("modules/main", Asset)
 	status, err := bash.Run("main", os.Args[1:])
 	if err != nil {

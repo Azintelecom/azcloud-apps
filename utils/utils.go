@@ -3,6 +3,7 @@ package utils
 import (
 	"net"
 	"strings"
+	"fmt"
 )
 
 
@@ -10,21 +11,20 @@ func IsIPv4(addr string) bool {
     return strings.Count(addr, ":") < 2
 }
 
-func GetMyAddress(ifaceName string) (string, error ) {
-	iface, err := net.InterfaceByName(ifaceName)
+func GetMyAddress(ifaceName []string) {
+	iface, err := net.InterfaceByName(ifaceName[0])
 	if err != nil {
-		return "", err
+		fmt.Println()
 	}
 	addrs, err := iface.Addrs()
 	if err != nil {
-		return "", err
+		fmt.Println()
 	}
 	for _,addr := range addrs {
 		i := strings.Split(addr.String(),"/")[0]
 		if IsIPv4(i) {
-			return i, nil
+			fmt.Println(i)
 		}
 	}
-	return "", fmt.Errorf("no address found for interface")
 }
 
