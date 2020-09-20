@@ -2,7 +2,8 @@
 
 _get_master_address()
 {
-  node_to_address "$(get_first_node)"
+  GetMyAddress "$AZCLOUD_APPS_IFACE"
+  #node_to_address "$(get_first_node)"
 }
 
 _get_slave_address()
