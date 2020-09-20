@@ -196,7 +196,7 @@ get_app_config()
 _get_default_address()
 {
   local address;
-  address="$(ip route get 1.1.1.1 | grep dev | awk '{print $7}')"
+  address="$(/usr/sbin/ip route get 1.1.1.1 | grep dev | awk '{print $7}')"
   [ -z "$address" ] && fatal "Could not get default address"
   echo "$address"
 }
@@ -204,7 +204,7 @@ _get_default_address()
 _get_default_iface()
 {
   local iface;
-  iface="$(ip route get 1.1.1.1 | grep dev | awk '{print $5}')"
+  iface="$(/usr/sbin/ip route get 1.1.1.1 | grep dev | awk '{print $5}')"
   [ -z "$iface" ] && fatal "Could not get default interface"
   echo "$iface"
 }
@@ -213,7 +213,7 @@ _get_default_address_full()
 {
   local iface; iface="$(_get_default_iface)"
   local address
-  address="$(ip addr sh "$iface" scope global | awk '/inet/{print $2}')"
+  address="$(/usr/sbin/ip addr sh "$iface" scope global | awk '/inet/{print $2}')"
   [ -z "$address" ] && fatal "Could not get default full address"
   echo "$address"
 }
