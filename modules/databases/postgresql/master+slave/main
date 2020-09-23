@@ -20,9 +20,10 @@ azapps_databases_postgresql_master_slave()
 
   if _am_i_master; then
     _setup_pgsql_master \
-      && stage_finished _setup_pgsql_master
+      && stage_finished setup_pgsql_master
   else
    _setup_pgsql_slave \
-     && stage_finished _setup_pgsql_slave
+     && stage_finished setup_pgsql_slave
   fi
+  stage_finished app_installed
 }
