@@ -9,6 +9,7 @@ import (
 
 func main() {
 	bash, _ := basher.NewContext("/bin/bash", false)
+	bash.Export("PATH","/root/bin:bin:/usr/bin:/sbin:/usr/sbin:/usr/local/sbin")
 	bash.ExportFunc("GetMyAddress", utils.GetMyAddress)
 	if 	bash.HandleFuncs(os.Args) {
 		os.Exit(0)

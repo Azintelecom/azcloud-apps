@@ -5,8 +5,8 @@ _install_and_setup_pgsql()
   local play_id; play_id="$(get_play_id)"
 
   yum -y install postgresql-server postgresql-contrib
-  postgresql-setup initdb
-  systemctl enable --now postgresql
+  postgresql-setup initdb || fatal "Could not initab on postgresql"
+  systemctl enable --now postgresql || fatal "Could not enable/start postgresql"
 
   su - postgres -c "psql -c \"CREATE USER replication REPLICATION LOGIN CONNECTION LIMIT 1 ENCRYPTED PASSWORD '$play_id'; \""
 }
