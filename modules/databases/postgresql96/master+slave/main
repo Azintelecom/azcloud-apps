@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+azapps_databases_postgresql_master_slave()
+{
+  AZCLOUD_APPS_STORAGE="/var/lib/pgsql"
+  export AZCLOUD_APPS_STORAGE
+
+  PROXY="$(get_proxy)"
+  export PROXY
+  set_proxy
+
+  update_host_file \
+    && stage_finished update_host_file
+  setup_app_storage 'postgresql' \
+    && stage_finished setup_app_storage
+  setup_firewall_and_selinux '5432:tcp' 'postgresql_t:permissive' \
+    && stage_finished setup_firewall_and_selinux 
+  _install_and_setup_pgsql \
+    && stage_finished install_and_setup_pgsql
+
+  if _am_i_master; then
+    _setup_pgsql_master \
+      && stage_finished setup_pgsql_master
+  else
+   _setup_pgsql_slave \
+     && stage_finished setup_pgsql_slave
+  fi
+  stage_finished app_installed
+}
