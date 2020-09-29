@@ -16,6 +16,8 @@ _install_and_setup_pgsql()
 {
   local play_id; play_id="$(get_play_id)"
 
+  _add_pgsql_repo || fatal "Could not add postgresql96 repo"
+
   yum -y install postgresql96-server postgresql96-contrib
   /usr/pgsql-9.6/bin/postgresql96-setup initdb || fatal "Could not initab on postgresql96"
   systemctl enable --now postgresql-9.6.service || fatal "Could not enable/start postgresql96"
