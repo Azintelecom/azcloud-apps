@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-azapps_databases_postgresql_master_slave()
+azapps_databases_postgresql96_master_slave()
 {
   AZCLOUD_APPS_STORAGE="/var/lib/pgsql"
   export AZCLOUD_APPS_STORAGE
