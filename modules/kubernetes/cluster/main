@@ -13,9 +13,9 @@ azapps_kubernetes_cluster()
   install_and_setup_kube \
     && stage_finished install_and_setup_kube
 
-  # skip for now
-  #if _am_i_kube_master_node; then
-  #  setup_kube_master_node
+  if _am_i_kube_master_node; then
+    setup_kube_master_node
+  fi
   #else
   #  setup_kube_worker_nodde
   #fi

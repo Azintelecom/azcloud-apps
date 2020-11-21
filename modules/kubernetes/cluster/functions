@@ -22,3 +22,22 @@ _am_i_kube_master_node()
   return ${exitcode}
 }
 
+_get_join_cert_digest()
+{
+  openssl x509 -pubkey -in "$AZCLOUD_APPS_KUBE_CA_CRT" \
+    | openssl rsa -pubin -outform der 2>/dev/null \
+    | openssl dgst -sha256 -hex \
+    | sed 's/^.* //'
+}
+
+_get_join_token()
+{
+  kubeadm token list \
+    | awk '{print $1}' \
+    | tail -n1
+}
+
+_get_join_command()
+{
+  kubeadm token create --print-join-command
+}
