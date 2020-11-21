@@ -1,9 +1,23 @@
 #!/usr/bin/env bash
 
-export HTTP_PROXY="$PROXY"
-export HTTPS_PROXY="$PROXY"
-export http_proxy="$PROXY"
-export https_proxy="$PROXY"
+azapps_kubernetes_cluster()
+{
+  PROXY="$(get_proxy)"
+  export PROXY
+  set_proxy
+ 
+  setup_firewall_and_selinux '6443:tcp,2379:tcp,2380:tcp,10250:tcp,10251:tcp,10252:tcp,10255:tcp' 'selinux:permissive' \
+    && stage_finished setup_firewall_and_selinux
+  update_host_file \
+    && stage_finished update_host_file
+  install_and_setup_kube \
+    && stage_finished install_and_setup_kube
 
-
-
+  # skip for now
+  #if _am_i_kube_master_node; then
+  #  setup_kube_master_node
+  #else
+  #  setup_kube_worker_nodde
+  #fi
+}
+  

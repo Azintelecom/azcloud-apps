@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+_get_master_address()
+{
+  node_to_address "$(get_first_node)"
+}
+
+_get_slave_address()
+{
+  node_to_address "$(for a in $(get_play_nodes); do echo "$a"; done | sort -V | sed -n 2p)"
+}
+
+_am_i_kube_master_node()
+{
+  master_address="$(_get_master_address)"
+  local my_address; my_address="$(get_my_address)"
+  local exitcode; exitcode=1
+
+  if [ "$my_address" == "$master_address" ]; then
+    exitcode=0
+  fi
+  return ${exitcode}
+}
+

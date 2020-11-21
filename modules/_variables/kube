@@ -1,0 +1,2 @@
+AZCLOUD_APPS_KUBE_NET="10.244.0.0/16"
+AZCLOUD_APPS_KUBE_NET_URL="https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml"
