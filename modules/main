@@ -21,9 +21,9 @@ main()
   load_module "${app_dir}"/modules/_variables
   load_module "${app_dir}"/modules/_functions
 
-  #app_proxy="$(cat "$app_dir"/.proxy)"
-  #export PROXY="${app_proxy}"
-  #set_proxy
+  app_proxy="$(cat "$app_dir"/.proxy)"
+  export PROXY="${app_proxy}"
+  set_proxy
   setup_dependencies || fatal "Could not setup dependencies"
 
   load_module "${app_dir}"/modules/"${app_path}"

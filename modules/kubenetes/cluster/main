@@ -2,9 +2,9 @@
 
 azapps_kubernetes_cluster()
 {
-  #PROXY="$(get_proxy)"
-  #export PROXY
-  #set_proxy
+  PROXY="$(get_proxy)"
+  export PROXY
+  set_proxy
  
   setup_firewall_and_selinux '6443:tcp,2379:tcp,2380:tcp,10250:tcp,10251:tcp,10252:tcp,10255:tcp' 'selinux:permissive' \
     && stage_finished setup_firewall_and_selinux
