@@ -93,6 +93,16 @@ setup_kube_master_node()
       'until [ \$(command -v kubeadm) ] || [ \$((++_c)) -gt 120 ]; do sleep 5; done;
        ${join_command}'"
   done
+  
+  until [ ${#nodes[*]} -eq "$(_get_cluster_size)" ] || [ $((++_c)) -gt 120 ]; do sleep 5; done
+  cat <<EOF
++-------------------------------------+
+  Cluster setup finished!
+  Cluster name: $(get_play_id)
+  Cluster nodes: $(_get_cluster_size)
+  Date: $(date)
++-------------------------------------+
+EOF
 }
 
 setup_kube_worker_node()

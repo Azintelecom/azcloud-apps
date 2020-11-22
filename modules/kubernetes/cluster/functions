@@ -41,3 +41,9 @@ _get_join_command()
 {
   kubeadm token create --print-join-command 2>/dev/null
 }
+
+_get_cluster_size()
+{
+  kubectl get nodes | grep -wo Ready | wc -l
+}
+
