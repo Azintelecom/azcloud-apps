@@ -61,14 +61,39 @@ setup_kube_master_node()
   export KUBECONFIG=$KUBECONFIG:~/.kube/config
   kubectl apply -f "$AZCLOUD_APPS_KUBE_NET_URL"
 
-  # check all nodes/pod (check that all in place)
-  kubectl get nodes
-  kubectl get pods --all-namespaces
+  ## wait for cluster initializing
+  #local time_to_wait; time_to_wait=120
+  #echo "Waiting for cluster initialization"
+  ## shellcheck disable=SC2143 
+  #until [[ ! "$(kubectl get nodes | grep master | grep -q Ready)" || $((++_c)) -gt "${time_to_wait}" ]]; do echo .; sleep 5; done
 
-  # add all nodes into cluster
-  #kubeadm join --discovery-token cfgrty.1234567890jyrfgd --discovery-token-ca-cert-hash sha256:1234..cdef 1.2.3.4:6443
+  local time_to_wait; time_to_wait=120
+  local counter; counter=0
+  while true; do
+    if kubectl get nodes | grep master | grep -q Ready; then
+      break
+    fi
+
+    if [ "$counter" -gt "$time_to_wait" ]; then
+      echo "Wait time $time_to_wait exceeded"
+      exit 1
+    fi
+  
+    sleep 5
+    ((counter++))
+    continue
+  done
+ 
+  # join nodes to cluster
+  local join_command
+  join_command="$(kubeadm token create --print-join-command)"
+
+  nodes=()
+  while IFS='' read -r line; do nodes+=("$line"); done < <(get_play_nodes)
+  for node in "${nodes[@]}"; do
+    run_on_node "$node" "tmux new-session -d ${join_command}"
+  done
 }
-
 
 setup_kube_worker_node()
 {
