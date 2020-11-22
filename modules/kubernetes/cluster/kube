@@ -95,7 +95,7 @@ setup_kube_master_node()
     if [ "$node" == "$(hostname -s)" ]; then
       continue
     fi
-    run_on_node "$node" tmux new-session -d "${join_command}"
+    run_on_node "$node" "tmux new-session -d '${join_command}'"
   done
 }
 
