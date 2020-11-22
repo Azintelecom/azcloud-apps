@@ -24,6 +24,17 @@ repo_gpgcheck=1
 gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 EOF
   yum install -y kubelet kubeadm kubectl --enablerepo=kubernetes
+
+  local existing_arg
+  existing_arg="$(sed 's@KUBELET_EXTRA_ARGS=@@; s@"@@g' /etc/sysconfig/kubelet)"
+
+  extra_args=("KUBELET_EXTRA_ARGS=\"")
+  extra_args+=("${existing_arg}")
+  extra_args+=("--runtime-cgroups=/systemd/system.slice")
+  extra_args+=("--kubelet-cgroups=/systemd/system.slice")
+  extra_args+=("\"")
+  sed -i "s@KUBELET_EXTRA_ARGS=.*@${extra_args[*]}@g" /etc/sysconfig/kubelet
+
   systemctl enable --now kubelet
 
   # sysctl tuning
@@ -54,9 +65,6 @@ setup_kube_master_node()
   
   # add all nodes into cluster
   #kubeadm join --discovery-token cfgrty.1234567890jyrfgd --discovery-token-ca-cert-hash sha256:1234..cdef 1.2.3.4:6443
-
-  # update '/etc/sysconfig/kube KUBELET_EXTRA_ARGS=' with '--runtime-cgroups=/systemd/system.slice --kubelet-cgroups=/systemd/system.slice'
-
 }
 
 
