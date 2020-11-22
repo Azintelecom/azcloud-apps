@@ -51,19 +51,18 @@ EOF
 
 setup_kube_master_node()
 {
-  :
-  #unset_proxy
-  #kubeadm init --pod-network-cidr="$AZCLOUD_APPS_KUBE_NET"
-  #
-  ## apply kube network
-  #kubectl apply -f "$AZCLOUD_APPS_KUBE_NET_URL"
-
-  ## check all nodes/pod (check that all in place)
-  #kubectl get nodes
-  #kubectl get pods --all-namespaces
+  unset_proxy
+  kubeadm init --pod-network-cidr="$AZCLOUD_APPS_KUBE_NET"
   
-  #mkdir -p ~/.kube
-  #cp -i /etc/kubernetes/admin.conf ~/.kube/config
+  mkdir -p ~/.kube
+  cp -i /etc/kubernetes/admin.conf ~/.kube/config
+
+  # apply kube network
+  kubectl apply -f "$AZCLOUD_APPS_KUBE_NET_URL"
+
+  # check all nodes/pod (check that all in place)
+  kubectl get nodes
+  kubectl get pods --all-namespaces
 
   # add all nodes into cluster
   #kubeadm join --discovery-token cfgrty.1234567890jyrfgd --discovery-token-ca-cert-hash sha256:1234..cdef 1.2.3.4:6443
