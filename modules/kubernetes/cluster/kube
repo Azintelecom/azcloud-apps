@@ -92,10 +92,10 @@ setup_kube_master_node()
   while IFS='' read -r line; do nodes+=("$line"); done < <(get_play_nodes)
   
   for node in "${nodes[@]}"; do
-    if "$node" == "$(hostname -s)"; then
+    if [ "$node" == "$(hostname -s)" ]; then
       continue
     fi
-    run_on_node "$node" "tmux new-session -d ${join_command}"
+    run_on_node "$node" tmux new-session -d "${join_command}"
   done
 }
 
