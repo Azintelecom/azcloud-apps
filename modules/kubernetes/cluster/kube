@@ -70,7 +70,7 @@ setup_kube_master_node()
   local time_to_wait; time_to_wait=120
   local counter; counter=0
   while true; do
-    if kubectl get nodes | grep master | grep -xw Ready; then
+    if kubectl get nodes | grep master | grep -qw Ready; then
       break
     fi
 
@@ -95,7 +95,9 @@ setup_kube_master_node()
     if [ "$node" == "$(hostname -s)" ]; then
       continue
     fi
-    run_on_node "$node" "tmux new-session -d '${join_command}'"
+    run_on_node "$node" "tmux new-session -d \
+      'until [ command -v kubeadm >& /dev/null ] || [ $((++_c)) -gt 120 ]; do sleep 5; done;
+       ${join_command}'"
   done
 }
 
