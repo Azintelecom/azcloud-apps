@@ -40,6 +40,7 @@ EOF
 
 setup_kube_master_node()
 {
+  unset_proxy
   kubeadm init --pod-network-cidr="$AZCLOUD_APPS_KUBE_NET"
   mkdir -p "$HOME"/.kube
   cp -i /etc/kubernetes/admin.conf "$HOME"/.kube/config
@@ -53,6 +54,9 @@ setup_kube_master_node()
   
   # add all nodes into cluster
   #kubeadm join --discovery-token cfgrty.1234567890jyrfgd --discovery-token-ca-cert-hash sha256:1234..cdef 1.2.3.4:6443
+
+  # update '/etc/sysconfig/kube KUBELET_EXTRA_ARGS=' with '--runtime-cgroups=/systemd/system.slice --kubelet-cgroups=/systemd/system.slice'
+
 }
 
 
