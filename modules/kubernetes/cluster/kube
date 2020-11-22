@@ -58,6 +58,7 @@ setup_kube_master_node()
   cp -i /etc/kubernetes/admin.conf ~/.kube/config
 
   # apply kube network
+  export KUBECONFIG=$KUBECONFIG:~/.kube/config
   kubectl apply -f "$AZCLOUD_APPS_KUBE_NET_URL"
 
   # check all nodes/pod (check that all in place)
