@@ -39,5 +39,5 @@ _get_join_token()
 
 _get_join_command()
 {
-  kubeadm token create --print-join-command
+  kubeadm token create --print-join-command 2>/dev/null
 }
