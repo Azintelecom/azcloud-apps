@@ -2,10 +2,18 @@
 
 azapps_kubernetes_cluster()
 {
+  AZCLOUD_APPS_STORAGE="/var/lib/docker"
+  export AZCLOUD_APPS_STORAGE
+
   PROXY="$(get_proxy)"
   export PROXY
   set_proxy
  
+  if ! _am_i_kube_master_node; then
+    setup_app_storage 'docker' \
+      && stage_finished setup_app_storage 
+  fi
+
   setup_firewall_and_selinux '6443:tcp,2379:tcp,2380:tcp,10250:tcp,10251:tcp,10252:tcp,10255:tcp' 'selinux:permissive' \
     && stage_finished setup_firewall_and_selinux
   update_host_file \
@@ -16,8 +24,5 @@ azapps_kubernetes_cluster()
   if _am_i_kube_master_node; then
     setup_kube_master_node
   fi
-  #else
-  #  setup_kube_worker_nodde
-  #fi
 }
   
