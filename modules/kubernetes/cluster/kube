@@ -70,7 +70,7 @@ setup_kube_master_node()
   local time_to_wait; time_to_wait=120
   local counter; counter=0
   while true; do
-    if kubectl get nodes | grep master | grep -xq Ready; then
+    if kubectl get nodes | grep master | grep -xw Ready; then
       break
     fi
 
