@@ -2,15 +2,34 @@
 
 _install_and_setup_docker()
 {
+  
+  local app_user; app_user="$1"; shift
   groupadd docker
-  usermod -aG docker $USER
+  usermod -aG docker "$app_user"
+
   yum install -y yum-utils device-mapper-persistent-data lvm2
-  yum-config-manager --add-repo "$AZCLOUD_APPS_KUB_DOCKER_REPO"
+  yum-config-manager --add-repo "$AZCLOUD_APPS_MINIKUBE_DOCKER_REPO"
   yum -y install docker
   systemctl enable --now docker
 }
 
 install_and_setup_minikube()
 {
-  :
+  local app_user; app_user="$(get_app_user)"
+  [ -z "$app_user" ] && fatal "Could not get appuser from $AZCLOUD_APPS_USER"
+
+  local minikube; minikube="/usr/local/bin/minikube"
+
+  _install_and_setup_docker "$app_user"
+
+  # install and setup kubectl
+  curl -L "$AZCLOUD_APPS_MINIKUBE_KUBECTL_URL" -o /usr/local/bin/kubectl
+  chmod +x /usr/local/bin/kubectl
+
+  # install and setup minikube
+  curl -L "$AZCLOUD_APPS_MINIKUBE_URL" -o "$minikube"
+  chmod +x "$minikube"
+
+  unset_proxy
+  "$minikube" start --vm-driver="$AZCLOUD_APPS_MINIKUBE_DRIVER"
 }
