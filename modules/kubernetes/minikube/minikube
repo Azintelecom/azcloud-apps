@@ -32,7 +32,10 @@ install_and_setup_minikube()
   unset_proxy
   su - "$app_user" -c "$minikube start --vm-driver=$AZCLOUD_APPS_MINIKUBE_DRIVER" && \
     echo "+----------------------+"
-    "$minikube" status
+    su - "$app_user" -c "$minikube status"
     echo "+----------------------+"
-  
+
+  cat <<EOF
+Please login $app_user to uje minikube
+EOF
 }
