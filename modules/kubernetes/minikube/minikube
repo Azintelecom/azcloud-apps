@@ -2,8 +2,8 @@
 
 _install_and_setup_docker()
 {
-  
   local app_user; app_user="$1"; shift
+
   groupadd docker
   usermod -aG docker "$app_user"
 
@@ -17,7 +17,6 @@ install_and_setup_minikube()
 {
   local app_user; app_user="$(get_app_user)"
   [ -z "$app_user" ] && fatal "Could not get appuser from $AZCLOUD_APPS_USER"
-
   local minikube; minikube="/usr/local/bin/minikube"
 
   _install_and_setup_docker "$app_user"
@@ -31,5 +30,5 @@ install_and_setup_minikube()
   chmod +x "$minikube"
 
   unset_proxy
-  "$minikube" start --vm-driver="$AZCLOUD_APPS_MINIKUBE_DRIVER"
+  su - "$app_user" -c "$minikube" start --vm-driver="$AZCLOUD_APPS_MINIKUBE_DRIVER"
 }
