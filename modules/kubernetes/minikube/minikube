@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+_install_and_setup_docker()
+{
+  groupadd docker
+  usermod -aG docker $USER
+  yum install -y yum-utils device-mapper-persistent-data lvm2
+  yum-config-manager --add-repo "$AZCLOUD_APPS_KUB_DOCKER_REPO"
+  yum -y install docker
+  systemctl enable --now docker
+}
+
+install_and_setup_minikube()
+{
+  :
+}

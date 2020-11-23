@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+azapps_kubernetes_minikube()
+{
+  AZCLOUD_APPS_STORAGE="/var/lib/docker"
+  export AZCLOUD_APPS_STORAGE
+
+  PROXY="$(get_proxy)"
+  export PROXY
+  set_proxy
+ 
+
+  setup_firewall_and_selinux '6443:tcp,2379:tcp,2380:tcp,10250:tcp,10251:tcp,10252:tcp,10255:tcp' 'selinux:permissive' \
+    && stage_finished setup_firewall_and_selinux
+  update_host_file \
+    && stage_finished update_host_file
+  setup_app_storage 'docker' \
+    && stage_finished setup_app_storage 
+  install_and_setup_minikube \
+    && stage_finished install_and_setup_minikube
+}
+ 
+#1. install minukube
+#2. at least 2 cpu
+#3. install docker and add user to docker group (before installing docker to don't reboot vm)
+#4. use --vm-driver=docker
+#5. install kubectl before
+
+
