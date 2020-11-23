@@ -38,7 +38,7 @@ $(su - "$app_user" -c "$minikube status")
 EOF
   cat <<EOF
 +-------------------------------------+
-Please login $app_user to uje minikube
+Login as '$app_user' to use minikube
 +-------------------------------------+
 EOF
 }
