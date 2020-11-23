@@ -117,6 +117,11 @@ get_play_id()
   fi
 }
 
+get_app_user()
+{
+  [ -e "$AZCLOUD_APPS_USER" ] && cat "$AZCLOUD_APPS_USER"
+}
+
 run_on_node()
 {
   local node; node="$1"; shift
