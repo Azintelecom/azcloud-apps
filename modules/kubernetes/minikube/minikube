@@ -30,5 +30,9 @@ install_and_setup_minikube()
   chmod +x "$minikube"
 
   unset_proxy
-  su - "$app_user" -c "$minikube start --vm-driver=$AZCLOUD_APPS_MINIKUBE_DRIVER"
+  su - "$app_user" -c "$minikube start --vm-driver=$AZCLOUD_APPS_MINIKUBE_DRIVER" && \
+    echo "+----------------------+"
+    "$minikube" status
+    echo "+----------------------+"
+  
 }
