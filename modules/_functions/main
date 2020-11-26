@@ -6,6 +6,11 @@ set_proxy()
   export https_proxy="$PROXY"
   export HTTP_PROXY="$PROXY"
   export HTTPS_PROXY="$PROXY"
+
+  # skip some repos in fastmirror
+  if [ -e /etc/yum/pluginconf.d/fastestmirror.conf ]; then
+    echo 'exclude=.ge' >> /etc/yum/pluginconf.d/fastestmirror.conf
+  fi
 }
 
 unset_proxy()
