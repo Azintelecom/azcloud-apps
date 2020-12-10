@@ -4,11 +4,13 @@ setup_firewall_and_selinux()
 {
   local fw_rules; fw_rules="$1"; shift
   local sl_rules; sl_rules="$1"; shift
+  local nt_rules; nt_rules="$1"; shift
   local port proto
   local action domain
 
   [ -n "$fw_rules" ] && IFS=, read -ra fw_rules_arr <<< "$fw_rules"
   [ -n "$sl_rules" ] && IFS=, read -ra sl_rules_arr <<< "$sl_rules"
+  [ -n "$nt_rules" ] && IFS=, read -ra nt_rules_arr <<< "$nt_rules"
 
   for rule in ${fw_rules_arr[*]}; do
     port="${rule%%:*}"
@@ -17,6 +19,16 @@ setup_firewall_and_selinux()
      -p "$proto" --dport "$port" \
      -m comment --comment 'added by azcloud-apps' \
      -m state --state NEW -j ACCEPT
+  done
+
+  for rule in ${nt_rules_arr[*]}; do
+    net="${rule}"
+    [ -z "$net" ] && continue
+    iptables -I INPUT \
+      -s "$net" \
+      -d "$net" \
+      -m comment --comment 'added by azcloud-apps' \
+      -m state --state NEW -j ACCEPT
   done
   service iptables save
 

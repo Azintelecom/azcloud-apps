@@ -28,3 +28,11 @@ func GetMyAddress(ifaceName []string) {
 	}
 }
 
+func GetNetworkFromAddress(addr []string) {
+	_, ipnet, err := net.ParseCIDR(addr[0])
+	if err != nil {
+		fmt.Println("")
+		return
+	}
+	fmt.Println(ipnet)
+}
