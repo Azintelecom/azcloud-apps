@@ -26,7 +26,6 @@ setup_firewall_and_selinux()
     [ -z "$net" ] && continue
     iptables -I INPUT \
       -s "$net" \
-      -d "$net" \
       -m comment --comment 'added by azcloud-apps' \
       -m state --state NEW -j ACCEPT
   done

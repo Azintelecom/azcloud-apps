@@ -222,6 +222,13 @@ _get_default_address_full()
   [ -z "$address" ] && fatal "Could not get default full address"
   echo "$address"
 }
+
+_get_default_network()
+{
+  local address; address="$(_get_default_address_full)"
+  local network; network="$(GetNetworkFromAddress "$address")"
+  echo "$network"
+}
   
 _get_address_range()
 {
