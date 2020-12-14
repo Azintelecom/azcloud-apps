@@ -1,20 +1,23 @@
 #!/usr/bin/env bash
 
-
-install_and_run_nfs4_server()
-{
-  _setup_nfs4_storage
-  _setup_firewall_and_selinux_nfs4
-  _install_and_setup_nfs4 
-}
-
 azapps_storages_filesystem_nfs4()
 {
-  export HTTP_PROXY="$PROXY"
-  export HTTPS_PROXY="$PROXY"
-  export http_proxy="$PROXY"
-  export https_proxy="$PROXY"
+  AZCLOUD_APPS_STORAGE="/var/lib/nfs4"
+  export AZCLOUD_APPS_STORAGE
 
-  export NFS_STORAGE="/nfs4"
-  install_and_run_nfs4_server
+  PROXY="$(get_proxy)"
+  export PROXY
+  set_proxy
+
+  NET="$(_get_default_network)"
+  
+  setup_firewall_and_selinux '2049' 'selinux:permissive' "$NET" \
+    && stage_finished setup_firewall_and_selinux
+  update_host_file \
+    && stage_finished update_host_file
+  setup_app_storage 'nfs4' \
+    && stage_finished setup_app_storage 
+  install_and_setup_nfs4 \
+    && stage_finished install_and_setup_nfs4
 }
+  
