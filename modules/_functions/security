@@ -41,6 +41,10 @@ setup_firewall_and_selinux()
     fi
     semanage "$action" -a "$domain"
   done
+
+  # setup sshd to accept password
+  sed -i '/PasswordAuthentication/s/no/yes/g' /etc/ssh/sshd_config
+  systemctl restart sshd
 }
     
    
