@@ -27,7 +27,7 @@ EOF
   mkdir -p /etc/systemd/system/docker.service.d
   systemctl daemon-reload
   systemctl restart docker
-  systemctl --enable docker
+  systemctl enable docker
 }
     
 _install_and_setup_docker()
