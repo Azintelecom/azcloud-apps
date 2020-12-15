@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+install_and_setup_nfs4_ubuntu()
+{
+  apt -y install nfs-kernel-server 
+
+  mkdir -p "$AZCLOUD_APPS_STORAGE"/share
+  chmod -R 755 "$AZCLOUD_APPS_STORAGE"/share
+  chown nfsnobody:nfsnobody "$AZCLOUD_APPS_STORAGE"/share
+
+  cat <<EOF >> /etc/exports
+# azcloud-apps nfs4 
+$AZCLOUD_APPS_STORAGE/share *(rw,sync,no_root_squash,insecure)
+EOF
+  modprobe nfs
+  systemctl enable --now nfs-server
+}
+

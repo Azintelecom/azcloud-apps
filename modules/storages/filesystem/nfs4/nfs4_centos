@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+install_and_setup_nfs4_centos()
+{
+  yum -y install nfs-utils
+
+  mkdir -p "$AZCLOUD_APPS_STORAGE"/share
+  chmod -R 755 "$AZCLOUD_APPS_STORAGE"/share
+  chown nfsnobody:nfsnobody "$AZCLOUD_APPS_STORAGE"/share
+
+  cat <<EOF > /etc/exports.d/azapps.exports
+$AZCLOUD_APPS_STORAGE/share *(rw,sync,no_root_squash,insecure)
+EOF
+  systemctl enable --now nfs-server
+}
+
