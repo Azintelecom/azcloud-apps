@@ -1,6 +1,35 @@
 #!/usr/bin/env bash
 
+_install_and_setup_docker_ce()
+{
+  yum install -y yum-utils device-mapper-persistent-data lvm2
+  yum-config-manager --add-repo "$AZCLOUD_APPS_KUBE_DOCKER_REPO"
+  yum update -y
+  yum install -y \
+    containerd.io-"$AZCLOUD_APPS_KUBE_CONTAINERD_VERSION" \
+    docker-ce-"$AZCLOUD_APPS_KUBE_DOCKER_VERSION" \
+    docker-ce-cli-"$AZCLOUD_APPS_KUBE_DOCKER_VERSION"
 
+  mkdir /etc/docker
+  cat <<EOF | sudo tee /etc/docker/daemon.json
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  },
+  "storage-driver": "overlay2",
+  "storage-opts": [
+    "overlay2.override_kernel_check=true"
+  ]
+}
+EOF
+  mkdir -p /etc/systemd/system/docker.service.d
+  systemctl daemon-reload
+  systemctl restart docker
+  systemctl --enable docker
+}
+    
 _install_and_setup_docker()
 {
   yum install -y yum-utils device-mapper-persistent-data lvm2
@@ -12,7 +41,11 @@ _install_and_setup_docker()
 
 install_and_setup_kube()
 {
-  _install_and_setup_docker
+  if [ "$AZCLOUD_APPS_KUBE_DOCKER_CE" = true ]; then
+    _install_and_setup_docker_ce
+  else
+    _install_and_setup_docker
+  fi
 
   cat <<EOF > /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
@@ -55,7 +88,7 @@ setup_kube_master_node()
   kubeadm init --pod-network-cidr="$AZCLOUD_APPS_KUBE_NET"
   
   mkdir -p ~/.kube
-  cp -i /etc/kubernetes/admin.conf ~/.kube/config
+  cp -i "$AZCLOUD_APPS_KUBE_CONFIG"/admin.conf ~/.kube/config
 
   # apply kube network
   export KUBECONFIG=$KUBECONFIG:~/.kube/config
