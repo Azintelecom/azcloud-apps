@@ -13,10 +13,11 @@ setup_firewall_and_selinux()
   [ -n "$nt_rules" ] && IFS=, read -ra nt_rules_arr <<< "$nt_rules"
 
   for rule in ${fw_rules_arr[*]}; do
-    port="${rule%%:*}"
+    port="${rule%:*}"
     proto="${rule##*:}"
     iptables -I INPUT \
-     -p "$proto" --dport "$port" \
+     -p "$proto" \
+     -m multiport --dports "$port" \
      -m comment --comment 'added by azcloud-apps' \
      -m state --state NEW -j ACCEPT
   done
