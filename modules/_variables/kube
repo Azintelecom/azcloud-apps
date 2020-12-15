@@ -1,5 +1,5 @@
 AZCLOUD_APPS_KUBE_NET="10.244.0.0/16"
 AZCLOUD_APPS_KUBE_NET_URL="https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml"
 AZCLOUD_APPS_KUBE_DOCKER_REPO="https://download.docker.com/linux/centos/docker-ce.repo"
-AZLCOUD_APPS_KUBE_CONFIG="/etc/kubernetes"
+AZCLOUD_APPS_KUBE_CONFIG="/etc/kubernetes"
 AZCLOUD_APPS_KUBE_CA_CRT="${AZCLOUD_APPS_KUBE_CONFIG}/pki/ca.crt"
