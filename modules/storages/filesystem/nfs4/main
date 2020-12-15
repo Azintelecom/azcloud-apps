@@ -11,13 +11,13 @@ azapps_storages_filesystem_nfs4()
 
   NET="$(_get_default_network)"
   
-  setup_firewall_and_selinux '2049' 'selinux:permissive' "$NET" \
+  setup_firewall_and_selinux '2049:tcp' 'selinux:permissive' "$NET" \
     && stage_finished setup_firewall_and_selinux
   update_host_file \
     && stage_finished update_host_file
   setup_app_storage 'nfs4' \
     && stage_finished setup_app_storage 
-  install_and_setup_nfs4 \
+  install_and_setup_nfs4_"$AZCLOUD_APPS_DISTR" \
     && stage_finished install_and_setup_nfs4
 }
   
