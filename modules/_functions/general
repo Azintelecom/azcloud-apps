@@ -1,10 +1,50 @@
 #!/usr/bin/env bash
 
+get_distribution_name()
+{
+  if command -v lsb_release &>/dev/null; then
+    lsb_release -si | tr '[:upper:]' '[:lower:]'
+  else
+    (
+      unset NAME
+      for f in /etc/os-release /usr/lib/os-release; do
+        [[ -e ${f} ]] || continue
+        # shellcheck disable=SC1090
+        source "${f}"
+        [[ -n ${NAME} ]] && echo "${NAME}" | tr '[:upper:]' '[:lower:]'
+        break
+      done
+    )
+  fi
+}
+
 setup_dependencies()
+{
+  setup_dependencies_"$DISTR"
+}
+
+setup_dependencies_centos()
 {
   yum -y clean all
   yum -y install tmux inotify-tools vim nc nmap
   yum -y install iptables-services && systemctl enable --now iptables
+  timedatectl set-timezone "$AZCLOUD_APPS_TIMEZONE"
+
+  # avahi disable for now
+  # because of bug in avahi-browse
+  #setup_firewall_and_selinux '5353:udp' && _setup_avahi_centos
+}
+
+setup_dependencies_ubuntu()
+{
+  
+  systemctl stop apt-daily.timer
+  systemctl disable apt-daily.timer
+  systemctl mask apt-daily.service
+  systemctl daemon-reload
+
+  apt -y update
+  apt -y install nmap inotify-tools tmux vim nc
   timedatectl set-timezone "$AZCLOUD_APPS_TIMEZONE"
 
   # avahi disable for now

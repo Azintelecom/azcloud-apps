@@ -24,6 +24,11 @@ main()
   app_proxy="$(cat "$app_dir"/.proxy)"
   export PROXY="${app_proxy}"
   set_proxy
+
+  DISTR="$(get_distribution_name)"
+  export DISTR
+  [ -z "$DISTR" ] && fatal "Could not detect distribution name"
+
   setup_dependencies || fatal "Could not setup dependencies"
 
   load_module "${app_dir}"/modules/"${app_path}"
