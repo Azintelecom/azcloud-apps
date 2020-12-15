@@ -4,7 +4,7 @@
 _install_and_setup_docker()
 {
   yum install -y yum-utils device-mapper-persistent-data lvm2
-  yum-config-manager --add-repo "$AZCLOUD_APPS_KUB_DOCKER_REPO"
+  yum-config-manager --add-repo "$AZCLOUD_APPS_KUBE_DOCKER_REPO"
   yum -y install docker
   systemctl enable --now docker
 }
