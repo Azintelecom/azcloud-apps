@@ -26,7 +26,7 @@ setup_dependencies()
 setup_dependencies_centos()
 {
   yum -y clean all
-  yum -y install tmux inotify-tools vim nc nmap
+  yum -y install tmux inotify-tools vim nmap
   yum -y install iptables-services && systemctl enable --now iptables
   timedatectl set-timezone "$AZCLOUD_APPS_TIMEZONE"
 
@@ -37,14 +37,21 @@ setup_dependencies_centos()
 
 setup_dependencies_ubuntu()
 {
-  
-  systemctl stop apt-daily.timer
-  systemctl disable apt-daily.timer
-  systemctl mask apt-daily.service
+
+  _services=(
+			 "apt-daily"
+			 "apt-daily-upgrade"
+			)
+
+  for _service in "${_services[@]}"; do
+    systemctl stop "${_service}".timer
+    systemctl disable "${_service}".timer
+    systemctl mask "${_service}".service
+  done
   systemctl daemon-reload
 
-  apt -y update
-  apt -y install nmap inotify-tools tmux vim nc
+  apt-get -y update
+  apt-get -y install nmap inotify-tools tmux vim netcat
   timedatectl set-timezone "$AZCLOUD_APPS_TIMEZONE"
 
   # avahi disable for now
