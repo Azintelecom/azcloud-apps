@@ -50,6 +50,7 @@ setup_dependencies_ubuntu()
   done
   systemctl daemon-reload
 
+  export DEBIAN_FRONTEND=noninteractive
   apt-get -y update
   apt-get -y install nmap inotify-tools tmux vim netcat
   timedatectl set-timezone "$AZCLOUD_APPS_TIMEZONE"
