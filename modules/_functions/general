@@ -11,7 +11,7 @@ get_distribution_name()
         [[ -e ${f} ]] || continue
         # shellcheck disable=SC1090
         source "${f}"
-        [[ -n ${NAME} ]] && echo "${NAME}" | tr '[:upper:]' '[:lower:]'
+        [[ -n ${NAME} ]] && echo "${NAME%% *}" | tr '[:upper:]' '[:lower:]'
         break
       done
     )
