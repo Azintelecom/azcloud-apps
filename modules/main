@@ -26,7 +26,7 @@ main()
   set_proxy
 
   AZCLOUD_APPS_DISTR="$(get_distribution_name)"
-  export DISTR
+  export AZCLOUD_APPS_DISTR
   [ -z "$AZCLOUD_APPS_DISTR" ] && fatal "Could not detect distribution name"
 
   setup_dependencies || fatal "Could not setup dependencies"

@@ -20,7 +20,7 @@ get_distribution_name()
 
 setup_dependencies()
 {
-  setup_dependencies_"$DISTR"
+  setup_dependencies_"$AZCLOUD_APPS_DISTR"
 }
 
 setup_dependencies_centos()
