@@ -9,11 +9,13 @@ azapps_databases_postgresql_master_slave()
   export PROXY
   set_proxy
 
+  NET="$(_get_default_network)"
+
   update_host_file \
     && stage_finished update_host_file
   setup_app_storage 'postgresql' \
     && stage_finished setup_app_storage
-  setup_firewall_and_selinux '5432:tcp' 'postgresql_t:permissive' \
+  setup_firewall_and_selinux '5432:tcp' 'postgresql_t:permissive' "$NET" \
     && stage_finished setup_firewall_and_selinux 
   _install_and_setup_pgsql \
     && stage_finished install_and_setup_pgsql
