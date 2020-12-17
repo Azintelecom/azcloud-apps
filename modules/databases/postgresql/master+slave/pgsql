@@ -99,4 +99,12 @@ primary_conninfo = 'host=$master_address port=5432 user=replication password=$pl
 trigger_file = '/tmp/postgresql.trigger.5432'
 EOF
   systemctl start postgresql || fatal "Could not start postgresql.service"
+  cat <<EOF
++-------------------------------------+
+  Cluster setup finished!
+  Cluster name: $(get_play_id)
+  Cluster nodes: $(_get_cluster_size)
+  Date: $(date)
++-------------------------------------+
+EOF
 }
