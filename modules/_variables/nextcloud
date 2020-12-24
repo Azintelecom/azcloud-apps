@@ -1,0 +1,29 @@
+AZCLOUD_APPS_NEXTCLOUD_VERSION=20
+AZCLOUD_APPS_NEXTCLOUD_REPO="https://download.nextcloud.com/server/releases/latest-${AZCLOUD_APPS_NEXTCLOUD_VERSION}.zip"
+AZCLOUD_APPS_NEXTCLOUD_REMI_REPO="http://rpms.remirepo.net/enterprise/remi-release-7.rpm"
+AZCLOUD_APPS_NEXTCLOUD_REMI_PHP_DISABLE="remi-php54"
+AZCLOUD_APPS_NEXTCLOUD_REMI_PHP_ENABLE="remi-php73"
+AZCLOUD_APPS_NEXTCLOUD_REQ=(
+  wget
+  unzip
+  vim
+  httpd
+  php
+  php-cli
+  php-mysqlnd
+  php-zip
+  php-devel
+  php-gd
+  php-mcrypt
+  php-mbstring
+  php-curl
+  php-xml 
+  php-pear
+  php-bcmath
+  php-json
+  php-pdo
+  php-pecl-apcu
+  php-pecl-apcu-devel
+)
+AZCLOUD_APPS_NEXTCLOUD_HOME="/var/www/html/nextcloud"
+AZCLOUD_APPS_NEXTCLOUD_DATA="${AZCLOUD_APPS_NEXTCLOUD_HOME}/data"

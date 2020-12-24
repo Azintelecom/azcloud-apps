@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+azapps_others_nextcloud()
+{
+  AZCLOUD_APPS_STORAGE="/var/lib/nextcloud/data"
+  export AZCLOUD_APPS_STORAGE
+
+  PROXY="$(get_proxy)"
+  export PROXY
+  set_proxy
+ 
+  setup_app_storage 'nextcloud' \
+    && stage_finished setup_app_storage
+  setup_firewall_and_selinux '80:tcp,443:tcp' 'selinux:permissive' \
+    && stage_finished setup_firewall_and_selinux
+  _install_and_setup_nextcloud \
+    && stage_finished install_and_setup_nextcloud
+  _start_nextcloud \
+    && stage_finished start_nextcloud
+}
+

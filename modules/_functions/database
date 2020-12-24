@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set_mariadb_password()
+{
+  local db_pass; db_pass="$1"; shift
+  local mysql_curr_password; mysql_curr_password="$1"; shift
+  [ -z "$mysql_curr_password" ] && mysql_curr_password=""
+
+  secure_mysql=$(expect -c "
+  set timeout 1
+  spawn mysql_secure_installation
+  expect \"Enter current password for root (enter for none):\"
+  send \"$mysql_curr_password\r\"
+  expect \"Set root password?*\"
+  send \"y\r\"
+  expect \"New password*\"
+  send \"$db_pass\r\"
+  expect \"Re-enter new password*\"
+  send \"$db_pass\r\"
+  expect \"Remove anonymous users?\"
+  send \"y\r\"
+  expect \"Disallow root login remotely?\"
+  send \"n\r\"
+  expect \"Remove test database and access to it?\"
+  send \"y\r\"
+  expect \"Reload privilege tables now?\"
+  send \"y\r\"
+  expect eof
+  ")
+  
+  echo "$secure_mysql"
+}  
