@@ -13,9 +13,9 @@ azapps_others_nextcloud()
     && stage_finished setup_app_storage
   setup_firewall_and_selinux '80:tcp,443:tcp' 'selinux:permissive' \
     && stage_finished setup_firewall_and_selinux
-  _install_and_setup_nextcloud \
+  _install_and_setup_nextcloud_"$AZCLOUD_APPS_DIST" \
     && stage_finished install_and_setup_nextcloud
-  _start_nextcloud \
+  _start_nextcloud_"$AZCLOUD_APPS_DISR" \
     && stage_finished start_nextcloud
 }
 
