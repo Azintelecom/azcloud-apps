@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+_setup_mariadb_nextcloud()
+{
+  set_mariadb_password "$AZCLOUD_APPS_NEXTCLOUD_DB_PASSWORD"
+  mysql -u root -p"$AZCLOUD_APPS_NEXTCLOUD_DB_PASSWORD" -e "
+    CREATE USER 'nextcloud'@'localhost' IDENTIFIED BY 'nextcloud';
+    CREATE DATABASE nextcloud;
+    GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'localhost';
+    FLUSH PRIVILEGES;
+    QUIT"
+}
+
+
+

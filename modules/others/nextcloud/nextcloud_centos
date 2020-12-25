@@ -11,38 +11,12 @@ _install_and_setup_nextcloud_centos()
 
   yum -y install mariadb-server
   systemctl enable --now mariadb
-  set_mariadb_password "$AZCLOUD_APPS_NEXTCLOUD_DB_PASSWORD"
-  mysql -u root -p"$AZCLOUD_APPS_NEXTCLOUD_DB_PASSWORD" -e "
-    CREATE USER 'nextcloud'@'localhost' IDENTIFIED BY 'nextcloud';
-    CREATE DATABASE nextcloud;
-    GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'localhost';
-    FLUSH PRIVILEGES;
-    QUIT"
-
-  wget "$AZCLOUD_APPS_NEXTCLOUD_REPO" -O /tmp/latest.zip
-  unzip /tmp/latest.zip -d /var/www/html
-  mkdir -p "$AZCLOUD_APPS_NEXTCLOUD_DATA"
-  mount --bind "$AZCLOUD_APPS_STORAGE" "$AZCLOUD_APPS_NEXTCLOUD_DATA"
-  cat <<EOF >> /etc/fstab
-$AZCLOUD_APPS_STORAGE $AZCLOUD_APPS_NEXTCLOUD_DATA none defaults,bind 0 0
-EOF
-  chown -R apache:apache "$AZCLOUD_APPS_NEXTCLOUD_HOME"
-
-  cat <<EOF > /etc/httpd/conf.d/nextcloud.conf
-<VirtualHost *:80>
-  ServerName default
-  DocumentRoot $AZCLOUD_APPS_NEXTCLOUD_HOME
-  <Directory $AZCLOUD_APPS_NEXTCLOUD_HOME>
-    AllowOverride all
-    Require all granted
-    DirectoryIndex index.php
-  </Directory>
-</VirtualHost>
-EOF
+  _setup_"$AZCLOUD_APPS_NEXTCLOUD_DATABASE"_nextcloud || fatal "Could not setup database for nextcloud"
+  _setup_"$AZCLOUD_APPS_NEXTCLOUD_WEBSERVER"_nextcloud || fatal "Could not setup webserver for nextcloud"
 }
 
 _start_nextcloud_centos()
 {
-  systemctl enable --now httpd
-  systemctl restart httpd
+  systemctl enable --now "$AZCLOUD_APPS_NEXTCLOUD_WEBSERVER"
+  systemctl restart "$AZCLOUD_APPS_NEXTCLOUD_WEBSERVER"
 }
