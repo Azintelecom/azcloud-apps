@@ -7,19 +7,20 @@ _setup_httpd_nextcloud()
     mkdir -p "$AZCLOUD_APPS_NEXTCLOUD_DATA"
     mount --bind "$AZCLOUD_APPS_STORAGE" "$AZCLOUD_APPS_NEXTCLOUD_DATA"
     cat <<EOF >> /etc/fstab
-  $AZCLOUD_APPS_STORAGE $AZCLOUD_APPS_NEXTCLOUD_DATA none defaults,bind 0 0
+$AZCLOUD_APPS_STORAGE $AZCLOUD_APPS_NEXTCLOUD_DATA none defaults,bind 0 0
 EOF
     chown -R apache:apache "$AZCLOUD_APPS_NEXTCLOUD_HOME"
   
     cat <<EOF > /etc/httpd/conf.d/nextcloud.conf
-  <VirtualHost *:80>
-    ServerName default
-    DocumentRoot $AZCLOUD_APPS_NEXTCLOUD_HOME
-    <Directory $AZCLOUD_APPS_NEXTCLOUD_HOME>
-      AllowOverride all
-      Require all granted
-      DirectoryIndex index.php
-    </Directory>
-  </VirtualHost>
+# added by azcloud-apps
+<VirtualHost *:80>
+  ServerName default
+  DocumentRoot $AZCLOUD_APPS_NEXTCLOUD_HOME
+  <Directory $AZCLOUD_APPS_NEXTCLOUD_HOME>
+    AllowOverride all
+    Require all granted
+    DirectoryIndex index.php
+  </Directory>
+</VirtualHost>
 EOF
 }
