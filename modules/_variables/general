@@ -1,0 +1,7 @@
+AZCLOUD_APPS_GENERAL_PACKAGES=(
+  tmux
+  inotify-tools
+  vim
+  nmap
+  expect
+)

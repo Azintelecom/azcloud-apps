@@ -37,7 +37,7 @@ EOF
     Require all granted
     DirectoryIndex index.php
   </Directory>
-<VirtualHost>
+</VirtualHost>
 EOF
 }
 
