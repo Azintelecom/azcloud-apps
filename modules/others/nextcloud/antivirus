@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+_setup_nextcloud_antivirus_centos()
+{
+  _setup_"$AZCLOUD_APPS_NEXTCLOUD_ANTIVIRUS"_centos
+}
+
+_setup_nextcloud_clamav_centos()
+{
+  # shellcheck disable=SC2086
+  yum -y install ${AZCLOUD_APPS_NEXTCLOUD_CLAMAV_REQ[*]}
+  freshclam --show-progress --stdout
+  systemc enable --now clamav-freshclam.service
+  cp "$AZCLOUD_APPS_NEXTCLOUD_CLAMAV_CONFIG_FILE" "$AZCLOUD_APPS_NEXTCLOUD_CLAMAV_CONFIG_DIR"/scan.conf.orig
+  echo "TCPSocket $AZCLOUD_APPS_NEXTCLOUD_CLAMAV_TCP_SOCKET_PORT" >> "$AZCLOUD_APPS_NEXTCLOUD_CLAMAV_CONIF_FILE"
+  systemctl enable clamd@scan
+  systemctl start clamd@scan
+}
+
+_setup_nextcloud_antivirus_ubuntu()
+{
+  _setup_"$AZCLOUD_APPS_NEXTCLOUD_ANTIVIRUS"_ubuntu
+}
+
+_setup_nextcloud_clamav_ubuntu()
+{
+  :
+}

@@ -17,5 +17,7 @@ azapps_others_nextcloud()
     && stage_finished install_and_setup_nextcloud
   _start_nextcloud_"$AZCLOUD_APPS_DISTR" \
     && stage_finished start_nextcloud
+  _setup_nextcloud_antivirus_"$AZCLOUD_APPS_DITRS" \
+    && stage_finished start_antivirus
 }
 
