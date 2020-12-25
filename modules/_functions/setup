@@ -5,9 +5,6 @@ setup_module_variables()
   local base_module
   base_module="$1"
   base_module="$(to_upper "$base_module")"
- 
-  local variables
-  variables="${AZCLOUD_APPS_HOME}/modules/_variables"
 
   module_variables=()
   while IFS='' read -r var; do
@@ -20,12 +17,8 @@ setup_module_variables()
     query=".apps.config.$(to_lower "$var")"
     result="$(get_app_config | jq -r "$query")"
     if ! is_null "$result"; then
-      declare "AZCLOUD_APPS_$var=$result"
-      export AZCLOUD_APPS_"$var"
-      while read -r dep_var; do
-        # shellcheck disable=SC2163
-        export "${dep_var}"
-      done <<< "$(grep -v ^"${var}" "${variables}"/"${base_module}" | sed '/^$/d')"
+      echo "AZCLOUD_APPS_$var=$result"
     fi
   done
 }
+
