@@ -6,7 +6,8 @@ _install_and_setup_nextcloud_centos()
   yum -y install "$AZCLOUD_APPS_NEXTCLOUD_REMI_REPO"
   yum-config-manager --disable "$AZCLOUD_APPS_NEXTCLOUD_REMI_PHP_DISABLE"
   yum-config-manager --enable "$AZCLOUD_APPS_NEXTCLOUD_REMI_PHP_ENABLE"
-  yum -y install "${AZCLOUD_APPS_NEXTCLOUD_REQ[*]}"
+  # shellcheck disable=SC2086
+  yum -y install ${AZCLOUD_APPS_NEXTCLOUD_REQ[*]}
 
   yum -y install mariadb-server
   systemctl enable --now mariadb

@@ -26,7 +26,8 @@ setup_dependencies()
 setup_dependencies_centos()
 {
   yum -y clean all
-  yum -y install tmux inotify-tools vim nmap
+  # shellcheck disable=SC2086
+  yum -y install ${AZCLOUD_APPS_GENERAL_PACKAGES[*]}
   yum -y install iptables-services && systemctl enable --now iptables
   timedatectl set-timezone "$AZCLOUD_APPS_TIMEZONE"
 

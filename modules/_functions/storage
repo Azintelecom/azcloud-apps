@@ -12,7 +12,8 @@ setup_app_storage()
 
   while IFS='' read -r a; do disks+=("$a"); done < <(lsblk | grep 'sd[b-z]' | awk '{print $1}' | sed 's@^@/dev/@g')
   [ -z "${disks[*]}" ] && { echo "no disk found"; return 1; }
-  vgcreate "$storage_group" "${disks[*]}"
+  # shellcheck disable=2086
+  vgcreate "$storage_group" ${disks[*]}
   lvcreate -n "$storage_vol" -l 100%VG "$storage_group"
   mkfs.ext4 "$storage_dev"
   mount "$storage_dev" "$AZCLOUD_APPS_STORAGE"
