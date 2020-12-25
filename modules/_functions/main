@@ -31,9 +31,9 @@ fatal()
 is_null()
 {
   local what; what="$1"; shift
-  local exitcode=0
+  local exitcode=1
   if [ "$what" = null ]; then
-    exitcode=1
+    exitcode=0
   fi
   return $exitcode
 }
