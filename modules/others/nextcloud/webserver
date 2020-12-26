@@ -3,15 +3,21 @@
 _setup_httpd_nextcloud()
 {
   wget "$AZCLOUD_APPS_NEXTCLOUD_REPO" -O /tmp/latest.zip
-    unzip /tmp/latest.zip -d /var/www/html
-    mkdir -p "$AZCLOUD_APPS_NEXTCLOUD_DATA"
-    mount --bind "$AZCLOUD_APPS_STORAGE" "$AZCLOUD_APPS_NEXTCLOUD_DATA"
-    cat <<EOF >> /etc/fstab
+  unzip /tmp/latest.zip -d /var/www/html
+  mkdir -p "$AZCLOUD_APPS_NEXTCLOUD_DATA"
+  mount --bind "$AZCLOUD_APPS_STORAGE" "$AZCLOUD_APPS_NEXTCLOUD_DATA"
+  cat <<EOF >> /etc/fstab
 $AZCLOUD_APPS_STORAGE $AZCLOUD_APPS_NEXTCLOUD_DATA none defaults,bind 0 0
 EOF
-    chown -R apache:apache "$AZCLOUD_APPS_NEXTCLOUD_HOME"
+  # get antivirus pack
+  if [ "$AZCLOUD_APPS_NEXTCLOUD_ANTIVIRUS_APP_ENABLED" = true ]; then
+    wget "$AZCLOUD_APPS_NEXTCLOUD_ANTIVIRUS_APP_URL" -O /tmp/files_antivirus.tgz
+    tar xf /tmp/files_antivirus.tgz -C "$AZCLOUD_APPS_NEXTCLOUD_HOME"/apps
+  fi
+
+  chown -R apache:apache "$AZCLOUD_APPS_NEXTCLOUD_HOME"
   
-    cat <<EOF > /etc/httpd/conf.d/nextcloud.conf
+  cat <<EOF > /etc/httpd/conf.d/nextcloud.conf
 # added by azcloud-apps
 <VirtualHost *:80>
   ServerName default
