@@ -12,7 +12,7 @@ _setup_clamav_centos()
   freshclam --show-progress --stdout
   systemctl enable --now clamav-freshclam.service
   cp "$AZCLOUD_APPS_NEXTCLOUD_CLAMAV_CONFIG_FILE" "$AZCLOUD_APPS_NEXTCLOUD_CLAMAV_CONFIG_DIR"/scan.conf.orig
-  echo "TCPSocket $AZCLOUD_APPS_NEXTCLOUD_CLAMAV_TCP_SOCKET_PORT" >> "$AZCLOUD_APPS_NEXTCLOUD_CLAMAV_CONIF_FILE"
+  echo "TCPSocket $AZCLOUD_APPS_NEXTCLOUD_CLAMAV_TCP_SOCKET_PORT" >> "$AZCLOUD_APPS_NEXTCLOUD_CLAMAV_CONFIG_FILE"
   systemctl enable --now clamd@scan
 }
 
