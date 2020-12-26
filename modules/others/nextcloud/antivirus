@@ -5,7 +5,7 @@ _setup_nextcloud_antivirus_centos()
   _setup_"$AZCLOUD_APPS_NEXTCLOUD_ANTIVIRUS"_centos
 }
 
-_setup_nextcloud_clamav_centos()
+_setup_clamav_centos()
 {
   # shellcheck disable=SC2086
   yum -y install ${AZCLOUD_APPS_NEXTCLOUD_CLAMAV_REQ[*]}
@@ -22,7 +22,7 @@ _setup_nextcloud_antivirus_ubuntu()
   _setup_"$AZCLOUD_APPS_NEXTCLOUD_ANTIVIRUS"_ubuntu
 }
 
-_setup_nextcloud_clamav_ubuntu()
+_setup_clamav_ubuntu()
 {
   :
 }
