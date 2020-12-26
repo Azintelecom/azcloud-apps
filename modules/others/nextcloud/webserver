@@ -29,4 +29,8 @@ EOF
   </Directory>
 </VirtualHost>
 EOF
+  # set php config
+  for php_config in "${AZCLOUD_APPS_NEXTCLOUD_PHP_CONFIG[@]}"; do
+    echo "${php_config}" >> /etc/php.d/99-nextcloud.ini
+  done
 }
