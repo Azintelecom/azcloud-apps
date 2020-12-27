@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+_install_and_setup_gitlab_centos()
+{
+  # shellcheck disable=SC2086
+  yum -y install ${AZCLOUD_APPS_GITLAB_REQ[*]}
+  curl -sS "$AZCLOUD_APPS_GITLAB_REPO" | sudo bash
+  [ -z "$AZCLOUD_APPS_GITLAB_URL" ] || fatal "Please set AZCLOUD_APPS_GITLAB_URL before install"
+  EXTERNAL_URL="$AZCLOUD_APPS_GITLAB_URL" yum install -y gitlab-ce 
+}
+
+

@@ -1,0 +1,6 @@
+AZCLOUD_APPS_GITLAB_URL="https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh"
+AZCLOUD_APPS_GITLAB_URL=""
+AZCLOUD_APPS_GITLAB_REQ=(
+  policycoreutils-python
+  curl
+)
