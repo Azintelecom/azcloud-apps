@@ -2,7 +2,7 @@
 #
 # INCLUDE: docker/single
 
-azapps_others_nextcloud()
+azapps_auth_keycloak()
 {
   PROXY="$(get_proxy)"
   export PROXY

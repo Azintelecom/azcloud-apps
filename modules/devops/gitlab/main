@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-azapps_others_nextcloud()
+azapps_devops_gitlab()
 {
   AZCLOUD_APPS_STORAGE="/var/lib/gitlab"
   export AZCLOUD_APPS_STORAGE
