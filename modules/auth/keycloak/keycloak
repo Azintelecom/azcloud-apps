@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+_install_and_setup_keycloak()
+{
+  doker network create keycloak-network
+
+  docker run \
+    -d \
+    --name postgres \
+    --net keycloak-network \
+    -e POSTGRES_DB=keycloak \
+    -e POSTGRES_USER=keycloak \
+    -e POSTGRES_PASSWORD=password \
+    postgres
+
+   docker run \
+    -d \
+    -p 8080:8080 \
+    --name keycloak \
+    --net keycloak-network \
+    -e DB_VENDOR=postgres \
+    -e DB_ADDR="$(docker inspect postgres --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}')" \
+    -e DB_USER=keycloak \
+    -e DB_PASSWORD=password \
+    -e KEYCLOAK_USER=admin \
+    -e KEYCLOAK_PASSWORD=admin \
+    -e PROXY_ADDRESS_FORWARDING=true \
+    jboss/keycloak
+   
+}
+
+
