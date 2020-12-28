@@ -53,7 +53,7 @@ main()
 
   # read INCLUDE
   while read -r module; do
-    load_module "${app_dir}"/module/"$module"
+    load_module "${app_dir}"/modules/"$module"
   done <<< "$(grep -Irh "^# *INCLUDE:" "${app_dir}"/modules | awk -F: '{print $NF}' | tr ' ' '\n' | sort -u | sed '/^$/d')"
 
   azapps_"$run_module" >> "$AZCLOUD_APPS_HOME"/app.log 2>&1
