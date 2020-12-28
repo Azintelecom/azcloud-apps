@@ -14,6 +14,6 @@ azapps_others_nextcloud()
   setup_firewall_and_selinux '80:tcp,443:tcp' 'selinux:permissive' \
     && stage_finished setup_firewall_and_selinux
   _install_and_setup_gitlab_"$AZCLOUD_APPS_DISTR" \
-    && stage_finished install_and_setup_nextcloud
+    && stage_finished install_and_setup_keycloak
 }
 

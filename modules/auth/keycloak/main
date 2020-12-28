@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#
+# INCLUDE: docker/single
+
+azapps_others_nextcloud()
+{
+  PROXY="$(get_proxy)"
+  export PROXY
+  set_proxy
+ 
+  setup_firewall_and_selinux '443:tcp' 'selinux:permissive' \
+    && stage_finished setup_firewall_and_selinux
+  azapps_docker_single \
+    && stage_finished setup_and_install_docker
+  _install_and_setup_keycloak \
+    && stage_finished install_and_setup_keycloak
+}
+

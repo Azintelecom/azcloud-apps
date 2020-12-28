@@ -37,7 +37,7 @@ main()
   load_module "${app_dir}"/modules/"${app_path}"
   run_module=${app_path////_}; run_module=${run_module//+/_}
 
-  # re-export variables 
+  # read APPS.CONFIG in YAML and reexport
   variables_to_export=()
   while IFS='' read -r var; do
     export "${var?}"
@@ -50,6 +50,11 @@ main()
       export "${dep_var%%=*}"
     done <<< "$(grep "${var%%=*}" "${AZCLOUD_APPS_HOME}"/modules/_variables/"${run_module##*_}" | grep -v ^"${var%%=*}")"
   done
+
+  # read INCLUDE
+  while read -r module; do
+    load_module "${app_dir}"/module/"$module"
+  done <<< "$(grep -Irh "^# *INCLUDE:" | awk -F: '{print $NF}' | tr ' ' '\n' | sort -u | sed '/^$/d')"
 
   azapps_"$run_module" >> "$AZCLOUD_APPS_HOME"/app.log 2>&1
 } 
