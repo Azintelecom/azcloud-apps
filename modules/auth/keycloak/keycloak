@@ -1,32 +1,89 @@
 #!/usr/bin/env bash
 
+_setup_nginx_config()
+{
+  local keycloak_address;
+  keycloak_address="$(docker inspect "$AZCLOUD_APPS_KEYCLOAK_NAME" --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}')"
+  [ -z "$keycloak_address" ] && fatal "Could not get keycloak address"
+
+  mkdir -p "$AZCLOUD_APPS_KEYCLOAK_PROXY_CONFIG_DIR" || fatal "Could not create $AZCLOUD_APPS_KEYCLOAK_PROXY_CONFIG_DIR"
+  cat <<EOF > "$AZCLOUD_APPS_KEYCLOAK_PROXY_CONFIG_FILE"
+server {
+  listen 443 ssl;
+  server_name $HOSTNAME;
+  
+  ssl_certificate     $AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_FILE;
+  ssl_certificate_key $AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_KEY;
+
+  location / {
+    proxy_pass http://$keycloak_address:8080/;
+    proxy_set_header X-Forwarded-Host $host:$server_port;
+    proxy_set_header X-Forwarded-Server $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $AZCLOUD_APPS_KEYCLOAK_PROXY_PROTO;
+  }
+}
+
+EOF
+}
+
+_get_ssl_certificate()
+{
+  if [ "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_SELFSIGNED" = true ]; then
+    openssl req \
+      -new \
+      -newkey "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_TYPE" \
+      -days "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_DURATION" \
+      -nodes \
+      -x"$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_TYPE" \
+      -subj "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_SUBJECT" \
+      -keyout "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_KEY" \
+      -out "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_FILE"
+  else
+    :
+  fi 
+}
+
+_docker()
+{
+  docker \
+    --debug="$AZCLOUD_APPS_KEYCLOAK_DOCKER_DEBUG" \
+    --detach="$AZCLOUD_APPS_KEYCLOAK_DOCKER_DETACH" \
+    --net="$AZCLOUD_APPS_KEYCLOAK_DOCKER_NETWORK" \
+    "$@"
+}
+
 _install_and_setup_keycloak()
 {
-  doker network create keycloak-network
+  _docker network create "$AZCLOUD_APPS_KEYCLOAK_DOCKER_NETWORK"
 
-  docker run \
-    -d \
-    --name postgres \
-    --net keycloak-network \
-    -e POSTGRES_DB=keycloak \
-    -e POSTGRES_USER=keycloak \
-    -e POSTGRES_PASSWORD=password \
-    postgres
+  _docker run \
+    --name "$AZCLOUD_APPS_KEYCLOAK_DOCKER_DATABASE" \
+    -e POSTGRES_DB="$AZCLOUD_APPS_KEYCLOAK_DATABASE_NAME" \
+    -e POSTGRES_USER="$AZCLOUD_APPS_KEYCLOAK_DATABASE_USER" \
+    -e POSTGRES_PASSWORD="$AZCLOUD_APPS_KEYCLOAK_DATABASE_PASSWORD" \
+    "$AZCLOUD_APPS_KEYCLOAK_DOCKER_DATABASE"
 
-   docker run \
-    -d \
-    -p 8080:8080 \
-    --name keycloak \
-    --net keycloak-network \
-    -e DB_VENDOR=postgres \
-    -e DB_ADDR="$(docker inspect postgres --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}')" \
-    -e DB_USER=keycloak \
-    -e DB_PASSWORD=password \
-    -e KEYCLOAK_USER=admin \
-    -e KEYCLOAK_PASSWORD=admin \
-    -e PROXY_ADDRESS_FORWARDING=true \
-    jboss/keycloak
-   
+  _docker run \
+    --name "$AZCLOUD_APPS_KEYCLOAK_NAME" \
+    -e DB_VENDOR="$AZCLOUD_APPS_KEYCLOAK_DATABASE_NAME" \
+    -e DB_ADDR="$(docker inspect "$AZCLOUD_APPS_KEYCLOAK_DOCKER_DATABASE" --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}')" \
+    -e DB_USER="$AZCLOUD_APPS_KEYCLOAK_DATABASE_USER" \
+    -e DB_PASSWORD="$AZCLOUD_APPS_KEYCLOAK_DATABASE_PASSWORD" \
+    -e KEYCLOAK_USER="$AZCLOUD_APPS_KEYCLOAK_USER" \
+    -e KEYCLOAK_PASSWORD="$AZCLOUD_APPS_KEYCLOAK_PASSWORD" \
+    -e PROXY_ADDRESS_FORWARDING="$AZCLOUD_APPS_KEYCLOAK_PROXY_ADDRESS_FORWARDING" \
+    "$AZCLOUD_APPS_KEYCLOAK_DOCKER_IMAGE":"$AZCLOUD_APPS_KEYCLOAK_VERSION"
+
+  # setup proxy for ssl terminating
+  _setup_nginx_config && \
+  _get_ssl_certificates && \
+  _docker run \
+    --name "$AZCLOUD_APPS_KEYCLOAK_PROXY_NAME" \
+    -v "$AZCLOUD_APPS_KEYCLOAK_PROXY_CONFIG_FILE":"$AZCLOUD_APPS_KEYCLOAK_PROXY_CONFIG_FILE" \
+    -v "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_DIR":"$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_DIR" \
+    -p "$AZCLOUD_APPS_KEYCLOAK_PROXY_PORTS" \
+    "$AZCLOUD_APPS_KEYCLOAK_PROXY_IMAGE"
 }
 
 
