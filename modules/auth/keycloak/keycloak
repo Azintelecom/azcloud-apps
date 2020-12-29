@@ -29,6 +29,8 @@ EOF
 
 _get_ssl_certificate()
 {
+  mkdir -p "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_DIR" || fatal "Could not create $AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_DIR"
+
   if [ "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_SELFSIGNED" = true ]; then
     local certificate_type
     certificate_type="$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_TYPE"
