@@ -55,7 +55,7 @@ _docker()
 
 _install_and_setup_keycloak()
 {
-  _docker network create "$AZCLOUD_APPS_KEYCLOAK_DOCKER_NETWORK"
+  docker network create "$AZCLOUD_APPS_KEYCLOAK_DOCKER_NETWORK"
 
   _docker run \
     --name "$AZCLOUD_APPS_KEYCLOAK_DOCKER_DATABASE" \
