@@ -61,7 +61,7 @@ _install_and_setup_keycloak()
     -d \
     --net "$AZCLOUD_APPS_KEYCLOAK_DOCKER_NETWORK" \
     --name "$AZCLOUD_APPS_KEYCLOAK_NAME" \
-    -e DB_VENDOR="$AZCLOUD_APPS_KEYCLOAK_DATABASE_NAME" \
+    -e DB_VENDOR="$AZCLOUD_APPS_KEYCLOAK_DATABASE" \
     -e DB_ADDR="$(docker inspect "$AZCLOUD_APPS_KEYCLOAK_DOCKER_DATABASE" --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}')" \
     -e DB_USER="$AZCLOUD_APPS_KEYCLOAK_DATABASE_USER" \
     -e DB_PASSWORD="$AZCLOUD_APPS_KEYCLOAK_DATABASE_PASSWORD" \
