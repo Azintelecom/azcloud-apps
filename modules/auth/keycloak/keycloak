@@ -17,9 +17,9 @@ server {
 
   location / {
     proxy_pass http://$keycloak_address:8080/;
-    proxy_set_header X-Forwarded-Host $host:$server_port;
-    proxy_set_header X-Forwarded-Server $host;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Host \$host:\$server_port;
+    proxy_set_header X-Forwarded-Server \$host;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $AZCLOUD_APPS_KEYCLOAK_PROXY_PROTO;
   }
 }
@@ -30,15 +30,26 @@ EOF
 _get_ssl_certificate()
 {
   if [ "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_SELFSIGNED" = true ]; then
+    local certificate_type
+    certificate_type="$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_TYPE"
+    local certificate_duration
+    certificate_duration="$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_DURATION"
+    local certificate_subject
+    certificate_subject="$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_SUBJECT"
+    local certificate_key
+    certificate_key="$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_KEY"
+    local certificate_file
+    certificate_file="$AZCLOUD_APP_KEYCLOAK_CERTIFICATE_FILE"
+
     openssl req \
       -new \
       -nodes \
       -x509 \
-      -newkey "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_TYPE" \
-      -days "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_DURATION" \
-      -subj "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_SUBJECT" \
-      -keyout "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_KEY" \
-      -out "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_FILE"
+      -newkey "$certificate_type" \
+      -days "$certificate_duration" \
+      -subj "$certificate_subject" \
+      -keyout "$certificate_key" \
+      -out "$certificate_file"
   else
     :
   fi 
