@@ -44,26 +44,22 @@ _get_ssl_certificate()
   fi 
 }
 
-_docker()
-{
-  docker \
-    --detach="$AZCLOUD_APPS_KEYCLOAK_DOCKER_DETACH" \
-    --net="$AZCLOUD_APPS_KEYCLOAK_DOCKER_NETWORK" \
-    "$@"
-}
-
 _install_and_setup_keycloak()
 {
   docker network create "$AZCLOUD_APPS_KEYCLOAK_DOCKER_NETWORK"
 
-  _docker run \
+  docker run \
+    -d \
+    --net "$AZCLOUD_APPS_KEYCLOAK_DOCKER_NETWORK" \
     --name "$AZCLOUD_APPS_KEYCLOAK_DOCKER_DATABASE" \
     -e POSTGRES_DB="$AZCLOUD_APPS_KEYCLOAK_DATABASE_NAME" \
     -e POSTGRES_USER="$AZCLOUD_APPS_KEYCLOAK_DATABASE_USER" \
     -e POSTGRES_PASSWORD="$AZCLOUD_APPS_KEYCLOAK_DATABASE_PASSWORD" \
     "$AZCLOUD_APPS_KEYCLOAK_DOCKER_DATABASE"
 
-  _docker run \
+  docker run \
+    -d \
+    --net "$AZCLOUD_APPS_KEYCLOAK_DOCKER_NETWORK" \
     --name "$AZCLOUD_APPS_KEYCLOAK_NAME" \
     -e DB_VENDOR="$AZCLOUD_APPS_KEYCLOAK_DATABASE_NAME" \
     -e DB_ADDR="$(docker inspect "$AZCLOUD_APPS_KEYCLOAK_DOCKER_DATABASE" --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}')" \
@@ -77,7 +73,10 @@ _install_and_setup_keycloak()
   # setup proxy for ssl terminating
   _setup_nginx_config && \
   _get_ssl_certificates && \
-  _docker run \
+
+  docker run \
+    -d \
+    --net "$AZCLOUD_APPS_KEYCLOAK_DOCKER_NETWORK" \
     --name "$AZCLOUD_APPS_KEYCLOAK_PROXY_NAME" \
     -v "$AZCLOUD_APPS_KEYCLOAK_PROXY_CONFIG_FILE":"$AZCLOUD_APPS_KEYCLOAK_PROXY_CONFIG_FILE" \
     -v "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_DIR":"$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_DIR" \
