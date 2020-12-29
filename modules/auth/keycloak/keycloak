@@ -47,7 +47,6 @@ _get_ssl_certificate()
 _docker()
 {
   docker \
-    --debug="$AZCLOUD_APPS_KEYCLOAK_DOCKER_DEBUG" \
     --detach="$AZCLOUD_APPS_KEYCLOAK_DOCKER_DETACH" \
     --net="$AZCLOUD_APPS_KEYCLOAK_DOCKER_NETWORK" \
     "$@"
