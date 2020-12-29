@@ -33,7 +33,7 @@ _get_ssl_certificate()
 
   if [ "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_SELFSIGNED" = true ]; then
     local certificate_type
-    certificate_type="$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_TYPE"
+    certificate_type="$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_KEY_TYPE"
     local certificate_duration
     certificate_duration="$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_DURATION"
     local certificate_subject
@@ -41,7 +41,7 @@ _get_ssl_certificate()
     local certificate_key
     certificate_key="$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_KEY"
     local certificate_file
-    certificate_file="$AZCLOUD_APP_KEYCLOAK_CERTIFICATE_FILE"
+    certificate_file="$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_FILE"
 
     openssl req \
       -new \
