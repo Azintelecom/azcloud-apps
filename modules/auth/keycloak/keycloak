@@ -72,7 +72,7 @@ _install_and_setup_keycloak()
 
   # setup proxy for ssl terminating
   _setup_nginx_config && \
-  _get_ssl_certificates && \
+  _get_ssl_certificate && \
 
   docker run \
     -d \
