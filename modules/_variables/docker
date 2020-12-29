@@ -1,2 +1,5 @@
 AZCLOUD_APPS_DOCKER_URL="https://get.docker.com/"
 AZCLOUD_APPS_DOCKER_COMPOSE_URL="https://github.com/docker/compose/releases/download/1.26.0"
+AZCLOUD_APPS_DOCKER_REPO="https://download.docker.com/linux/centos/docker-ce.repo"
+AZCLOUD_APPS_DOCKER_VERSION="19.03.11"
+AZCLOUD_APPS_DOCKER_CONTAINERD_VERSION="1.2.13"

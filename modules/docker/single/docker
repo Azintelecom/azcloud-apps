@@ -2,7 +2,16 @@
 
 _install_docker()
 {
-  curl -fsSL "$AZCLOUD_APPS_DOCKER_URL" | sh
+  # old one, no version control
+  #curl -fsSL "$AZCLOUD_APPS_DOCKER_URL" | sh
+
+  # new, with version control
+  yum install -y yum-utils device-mapper-persistent-data lvm2
+  yum-config-manager --add-repo "$AZCLOUD_APPS_DOCKER_REPO"
+  yum install -y \
+    containerd.io-"$AZCLOUD_APPS_DOCKER_CONTAINERD_VERSION" \
+    docker-ce-"$AZCLOUD_APPS_DOCKER_VERSION" \
+    docker-ce-cli-"$AZCLOUD_APPS_DOCKER_VERSION"
 }
 
 _install_docker_compose()
