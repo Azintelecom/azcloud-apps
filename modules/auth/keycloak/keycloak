@@ -32,10 +32,10 @@ _get_ssl_certificate()
   if [ "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_SELFSIGNED" = true ]; then
     openssl req \
       -new \
+      -nodes \
+      -x509 \
       -newkey "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_TYPE" \
       -days "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_DURATION" \
-      -nodes \
-      -x"$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_TYPE" \
       -subj "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_SUBJECT" \
       -keyout "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_KEY" \
       -out "$AZCLOUD_APPS_KEYCLOAK_CERTIFICATE_FILE"
