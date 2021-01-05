@@ -18,5 +18,8 @@ _install_and_setup_nextcloud_centos()
 _start_nextcloud_centos()
 {
   systemctl enable --now "$AZCLOUD_APPS_NEXTCLOUD_WEBSERVER"
+  if $AZCLOUD_APPS_NEXTCLOUD_CONFIG_SETUP; then
+    _setup_nextcloud_config
+  fi
   systemctl restart "$AZCLOUD_APPS_NEXTCLOUD_WEBSERVER"
 }
