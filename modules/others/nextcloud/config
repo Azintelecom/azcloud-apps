@@ -1,77 +1,17 @@
 #!/usr/bin/env bash
 
-_generate_random()
-{
-  local x; x="$1"
-  openssl rand -base64 "$x"
-}
-
-_generate_instanceid()
-{
-  local instanceid;
-  local found; found=true
-
-  symbols=(/ +)
-  while true; do
-    instanceid="$(_generate_random 9)"
-    for s in ${symbols[*]}; do
-      if grep -q "${s}" <<< "$instanceid"; then
-        found=false
-        break
-      else
-        found=true
-      fi
-    done
-    if $found; then
-      break
-    fi
-  done
-  echo "${instanceid}"
-}
-
-_generate_passwordsalt()
-{
-  _generate_random 24
-}
-
-_generate_secret()
-{
-  _generate_random 36
-}
-
 _setup_nextcloud_config()
 {
-
-  local instanceid; instanceid="$(_generate_instanceid)"
-  local passwordsalt; passwordsalt="$(_generate_passwordsalt)"
-  local secret; secret="$(_generate_secret)"
-  local version; version="$(su - apache -s /bin/bash "cd $AZCLOUD_APPS_NEXTCLOUD_HOME && php occ -V")" 
-  local full_address; full_address="$(_get_default_address_full)"
-  local cli_url; cli_url="http://${full_address%%/*}"
-
-  cat <<EOF > "$AZCLOUD_APPS_NEXTCLOUD_CONFIG_FILE"
-<?php
-\$CONFIG = array (
-  'instanceid' => '$instanceid',
-  'passwordsalt' => '$passwordsalt',
-  'secret' => '$secret',
-  'trusted_domains' => 
-  array (
-    0 => '*',
-  ),
-  'datadirectory' => '$AZCLOUD_APPS_NEXTCLOUD_DATA',
-  'dbtype' => '$AZCLOUD_APPS_NEXTCLOUD_CONFIG_DATABASE',
-  'version' => '$version',
-  'overwrite.cli.url' => '$cli_url',
-  'overwriteprotocol' => '$AZCLOUD_APPS_NEXTCLOUD_CONFIG_OVERWRITE_PROTOCOL',
-  'dbname' => '$AZCLOUD_APPS_NEXTCLOUD_DATABASE_NAME',
-  'dbhost' => '$AZCLOUD_APPS_NEXTCLOUD_DATABASE_HOME',
-  'dbport' => '',
-  'dbtableprefix' => 'oc_',
-  'dbuser' => '$AZCLOUD_APPS_NEXTCLOUD_DATABASE_USERNAME',
-  'dbpassword' => '$AZCLOUD_APPS_NEXTCLOUD_DATABASE_PASSWORD',
-  'installed' => true,
-);
-EOF
+  su - "$AZCLOUD_APPS_NEXTCLOUD_WEBSERVER_USER" -s /bin/bash -c \
+  "cd '$AZCLOUD_APPS_NEXTCLOUD_HOME' && \
+   php occ  maintenance:install \
+     --database '$AZCLOUD_APPS_NEXTCLOUD_CONFIG_DATABASE' \
+     --database-name '$AZCLOUD_APPS_NEXTCLOUD_DATABASE_NAME' \
+     --database-user '$AZCLOUD_APPS_NEXTCLOUD_DATABASE_USERNAME' \
+     --database-pass '$AZCLOUD_APPS_NEXTCLOUD_DATABASE_PASSWORD'
+     --admin-user '$AZCLOUD_APPS_NEXTCLOUD_ADMIN_USERNAME' \
+     --admin-pass '$AZCLOUD_APPS_NEXTCLOUD_ADMIN_PASSWORD'
+  "
+  sed -i "/overwrite.cli.url/a 'overwriteprotocol' => '$AZCLOUD_APPS_NEXTCLOUD_CONFIG_OVERWRITE_PROTOCOL',"  "$AZCLOUD_APPS_NEXTCLOUD_CONFIG_FILE"
 }
 
