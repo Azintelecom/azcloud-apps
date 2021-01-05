@@ -12,6 +12,11 @@ _setup_nextcloud_config()
      --admin-user '$AZCLOUD_APPS_NEXTCLOUD_ADMIN_USERNAME' \
      --admin-pass '$AZCLOUD_APPS_NEXTCLOUD_ADMIN_PASSWORD'
   "
-  sed -i "/overwrite.cli.url/a 'overwriteprotocol' => '$AZCLOUD_APPS_NEXTCLOUD_CONFIG_OVERWRITE_PROTOCOL',"  "$AZCLOUD_APPS_NEXTCLOUD_CONFIG_FILE"
+  # set trusted domain and override protocol
+  su - "$AZCLOUD_APPS_NEXTCLOUD_WEBSERVER_USER" -s /bin/bash -c \
+  "cd '$AZCLOUD_APPS_NEXTCLOUD_HOME' && \
+   php occ config:system:set trusted_domains 1 --value='*'
+   php occ config:system:set overwriteprotocol --value='$AZCLOUD_APPS_NEXTCLOUD_CONFIG_OVERWRITE_PROTOCOL'
+  "
 }
 
