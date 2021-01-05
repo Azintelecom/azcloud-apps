@@ -8,7 +8,7 @@ _setup_nextcloud_config()
      --database '$AZCLOUD_APPS_NEXTCLOUD_CONFIG_DATABASE' \
      --database-name '$AZCLOUD_APPS_NEXTCLOUD_DATABASE_NAME' \
      --database-user '$AZCLOUD_APPS_NEXTCLOUD_DATABASE_USERNAME' \
-     --database-pass '$AZCLOUD_APPS_NEXTCLOUD_DATABASE_PASSWORD'
+     --database-pass '$AZCLOUD_APPS_NEXTCLOUD_DATABASE_PASSWORD' \
      --admin-user '$AZCLOUD_APPS_NEXTCLOUD_ADMIN_USERNAME' \
      --admin-pass '$AZCLOUD_APPS_NEXTCLOUD_ADMIN_PASSWORD'
   "
