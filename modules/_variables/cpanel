@@ -1,0 +1,3 @@
+AZCLOUD_APPS_CPANEL_REQ=(perl)
+AZCLOUD_APPS_CPANEL_URL="https://securedownloads.cpanel.net/latest"
+

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+_install_and_setup_cpanel_centos()
+{
+  local latest; latest="$(mktemp /tmp/cpanel.XXXXXXXXXXXXX)"
+
+  # shellcheck disable=SC2086
+  yum install -y ${AZCLOUD_APPS_CPANEL_REQ[*]}
+  curl -o "${latest}" -L "${AZCLOUD_APPS_CPANEL_URL}" 
+  #sh "${latest}"
+}

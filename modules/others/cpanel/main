@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+azapps_others_nextcloud()
+{
+  AZCLOUD_APPS_STORAGE="/var/lib/cpanel/data"
+  export AZCLOUD_APPS_STORAGE
+
+  PROXY="$(get_proxy)"
+  export PROXY
+  set_proxy
+ 
+  setup_app_storage 'cpanel' \
+    && stage_finished setup_app_storage
+  setup_firewall_and_selinux '80:tcp,443:tcp,2807:tcp' 'selinux:permissive' \
+    && stage_finished setup_firewall_and_selinux
+  _install_and_setup_cpanel_"$AZCLOUD_APPS_DISTR" \
+    && stage_finished install_and_setup_cpanel
+}
+
