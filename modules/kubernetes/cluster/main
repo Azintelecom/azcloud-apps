@@ -10,6 +10,8 @@ azapps_kubernetes_cluster()
   set_proxy
 
   NET="$(_get_default_network)"
+  AZCLOUD_APPS_KUBE_VERSION="$(_detailed_kube_version)"
+  export AZCLOUD_APPS_KUBE_VERSION
   
   setup_firewall_and_selinux '6443:tcp,2379:2380:tcp,10250:10252:tcp,10255:tcp,30000:32767:tcp' 'selinux:permissive' "$NET" \
     && stage_finished setup_firewall_and_selinux

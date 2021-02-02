@@ -2,6 +2,9 @@
 
 _install_and_setup_docker_ce()
 {
+  AZCLOUD_APPS_KUBE_CONTAINERD_VERSION="$(_detailed_containerd_version)"
+  AZCLOUD_APPS_KUBE_DOCKER_VERSION="$(_detailed_docker_version)"
+  
   yum install -y yum-utils device-mapper-persistent-data lvm2
   yum-config-manager --add-repo "$AZCLOUD_APPS_KUBE_DOCKER_REPO"
   yum update -y

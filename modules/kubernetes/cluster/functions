@@ -47,3 +47,52 @@ _get_cluster_size()
   kubectl get nodes | grep -wo Ready | wc -l
 }
 
+_detailed_version_of()
+{
+  local what; what="$1"; shift
+  local what_version; what_version="$1"; shift
+  local what_repo; what_repo="$1"
+
+  enable_repo=()
+  if [ -n "$what_repo" ]; then
+    enable_repo=("--enablerepo=$what_repo")
+  else
+    enable_repo=("--nodocs")
+  fi
+
+  local detailed_version
+  detailed_version="$(
+    yum \
+      --showduplicates \
+      "${enable_repo[@]}" \
+      list "$what" \
+      | grep ^"${what}" \
+      | awk '{print $2}' \
+      | cut -d: -f2 \
+      | grep ^"${what_version}" \
+      | sort -V \
+      | tail -1)"
+  [ -z "$detailed_version" ] && fatal "Could not get detailed version of $what"
+  echo "$detailed_version"
+}
+
+_detailed_kube_version()
+{
+  local kube_version
+  kube_version="$(_detailed_version_of kubeadm "1.${AZCLOUD_APPS_KUBE_VERSION}" kubernetes)"
+  echo "$kube_version"
+}
+
+_detailed_docker_version()
+{
+  local docker_version
+  docker_version="$(_detailed_version_of docker-ce "${AZCLOUD_APPS_KUBE_DOCKER_VERSION}" docker-ce)"
+  echo "$docker_version"
+}
+
+_detailed_containerd_version()
+{ 
+  local containerd_version; 
+  containerd_version="$(_detailed_version_of containerd.io "$AZCLOUD_APPS_KUBE_CONTAINERD_VERSION")"
+  echo "$containerd_version"
+}
