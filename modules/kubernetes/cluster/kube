@@ -5,8 +5,8 @@ _install_and_setup_docker_ce()
   yum install -y yum-utils device-mapper-persistent-data lvm2
   yum-config-manager --add-repo "$AZCLOUD_APPS_KUBE_DOCKER_REPO"
 
-  #AZCLOUD_APPS_KUBE_CONTAINERD_VERSION="$(_detailed_containerd_version)"
-  #AZCLOUD_APPS_KUBE_DOCKER_VERSION="$(_detailed_docker_version)"
+  AZCLOUD_APPS_KUBE_CONTAINERD_VERSION="$(_detailed_containerd_version)"
+  AZCLOUD_APPS_KUBE_DOCKER_VERSION="$(_detailed_docker_version)"
   yum install -y \
     containerd.io-"$AZCLOUD_APPS_KUBE_CONTAINERD_VERSION" \
     docker-ce-"$AZCLOUD_APPS_KUBE_DOCKER_VERSION" \
@@ -59,7 +59,7 @@ repo_gpgcheck=1
 gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 EOF
   
-  #AZCLOUD_APPS_KUBE_VERSION="$(_detailed_kube_version)"
+  AZCLOUD_APPS_KUBE_VERSION="$(_detailed_kube_version)"
   yum install -y \
     --enablerepo=kubernetes \
     kubelet-"$AZCLOUD_APPS_KUBE_VERSION" \
