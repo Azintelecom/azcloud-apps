@@ -53,11 +53,14 @@ _detailed_version_of()
   local what_version; what_version="$1"; shift
   local what_repo; what_repo="$1"
 
+  # here we replace --enablerepo
+  # with --color, because of '' when
+  # ${enable_repo[@]} is empty
   enable_repo=()
   if [ -n "$what_repo" ]; then
     enable_repo=("--enablerepo=$what_repo")
   else
-    enable_repo=("--nodocs")
+    enable_repo=("--color=never")
   fi
 
   local detailed_version
