@@ -86,7 +86,7 @@ _detailed_kube_version()
 _detailed_docker_version()
 {
   local docker_version
-  docker_version="$(_detailed_version_of docker-ce "${AZCLOUD_APPS_KUBE_DOCKER_VERSION}" docker-ce)"
+  docker_version="$(_detailed_version_of docker-ce "${AZCLOUD_APPS_KUBE_DOCKER_VERSION}" docker-ce-stable)"
   echo "$docker_version"
 }
 
