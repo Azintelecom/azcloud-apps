@@ -62,7 +62,7 @@ _detailed_version_of()
 
   local detailed_version
   detailed_version="$(
-    yum \
+    yum -y \
       --showduplicates \
       "${enable_repo[@]}" \
       list "$what" \
