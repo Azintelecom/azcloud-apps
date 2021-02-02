@@ -142,6 +142,8 @@ setup_kube_master_node()
   Cluster name: $(get_play_id)
   Cluster nodes: $(_get_cluster_size)
   Date: $(date)
+  Kube version: $AZCLOUD_APPS_KUBE_VERSION
+  Docker version: $AZCLOUD_APPS_KUBE_DOCKER_VERSION
 +-------------------------------------+
 EOF
 }
