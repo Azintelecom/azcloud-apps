@@ -1,5 +1,5 @@
 AZCLOUD_APPS_NEXTCLOUD_VERSION=20
-AZCLOUD_APPS_NEXTCLOUD_REPO="https://download.nextcloud.com/server/releases/latest-${AZCLOUD_APPS_NEXTCLOUD_VERSION}.zip"
+AZCLOUD_APPS_NEXTCLOUD_REPO="https://download.nextcloud.com/server/releases/latest-${AZCLOUD_APPS_NEXTCLOUD_VERSION}.tar.bz2"
 AZCLOUD_APPS_NEXTCLOUD_REMI_REPO="http://rpms.remirepo.net/enterprise/remi-release-7.rpm"
 AZCLOUD_APPS_NEXTCLOUD_REMI_PHP_DISABLE="remi-php54"
 AZCLOUD_APPS_NEXTCLOUD_REMI_PHP_ENABLE="remi-php73"

@@ -2,8 +2,8 @@
 
 _setup_httpd_nextcloud()
 {
-  wget "$AZCLOUD_APPS_NEXTCLOUD_REPO" -O /tmp/latest.zip
-  unzip /tmp/latest.zip -d /var/www/html
+  wget "$AZCLOUD_APPS_NEXTCLOUD_REPO" -O /tmp/latest.tar.bz2
+  tar -xf /tmp/latest.tar.bz2 -C /var/www/html
   mkdir -p "$AZCLOUD_APPS_NEXTCLOUD_DATA"
   mount --bind "$AZCLOUD_APPS_STORAGE" "$AZCLOUD_APPS_NEXTCLOUD_DATA"
   cat <<EOF >> /etc/fstab
