@@ -4,4 +4,5 @@ AZCLOUD_APPS_GENERAL_PACKAGES=(
   vim
   nmap
   expect
+  bzip2
 )
