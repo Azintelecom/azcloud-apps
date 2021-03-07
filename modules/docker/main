@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-azapps_docker_single()
+azapps_docker()
 {
   AZCLOUD_APPS_STORAGE="/var/lib/docker"
   export AZCLOUD_APPS_STORAGE
