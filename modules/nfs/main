@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 install_and_run_nfs_server()
 {
   _setup_nfs_storage

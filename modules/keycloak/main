@@ -2,7 +2,7 @@
 #
 # INCLUDE: docker
 
-azapps_auth_keycloak()
+azapps_keycloak()
 {
   PROXY="$(get_proxy)"
   export PROXY

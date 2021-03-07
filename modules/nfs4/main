@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-azapps_storages_filesystem_nfs4()
+azapps_nfs4()
 {
   AZCLOUD_APPS_STORAGE="/var/lib/nfs4"
   export AZCLOUD_APPS_STORAGE
