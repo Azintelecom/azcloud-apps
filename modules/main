@@ -35,21 +35,7 @@ main()
   setup_dependencies || fatal "Could not setup dependencies"
 
   load_module "${app_dir}"/modules/"${app_path}"
-  #run_module=${app_path////_}; run_module=${run_module//+/_}
-
-  # read APPS.CONFIG in YAML and reexport
-  #variables_to_export=()
-  #while IFS='' read -r var; do
-  #  export "${var?}"
-  #  variables_to_export+=("${var}")
-  #done <<< "$(setup_module_variables "${run_module##*_}")"
-
-  #for var in "${variables_to_export[@]}"; do
-  #  while read -r dep_var; do
-  #    eval "${dep_var}"
-  #    export "${dep_var%%=*}"
-  #  done <<< "$(grep "${var%%=*}" "${AZCLOUD_APPS_HOME}"/modules/_variables/"${run_module##*_}" | grep -v ^"${var%%=*}")"
-  #done
+  run_module=${app_path////_}; run_module=${run_module//+/_}
 
   # read APPS.CONFIG in YAML and reexport
   variables_to_export=()

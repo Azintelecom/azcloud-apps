@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# INCLUDE: docker/single
+# INCLUDE: docker
 
 azapps_auth_keycloak()
 {
@@ -10,7 +10,7 @@ azapps_auth_keycloak()
  
   setup_firewall_and_selinux '443:tcp' 'selinux:permissive' \
     && stage_finished setup_firewall_and_selinux
-  azapps_docker_single \
+  azapps_docker \
     && stage_finished setup_and_install_docker
   _install_and_setup_keycloak \
     && stage_finished install_and_setup_keycloak
