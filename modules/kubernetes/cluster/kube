@@ -88,6 +88,12 @@ EOF
   # disable swap
   sed -i '/swap/d' /etc/fstab
   swapoff -a
+  
+  # setup kube depndencies
+  if [ "$AZCLOUD_APPS_KUBE_INSTALL_DEPS" = true ]; then
+    # shellcheck disable=SC2086
+    yum -y install ${AZCLOUD_APPS_KUBE_DEPS[*]}
+  fi
 }
 
 setup_kube_master_node()
