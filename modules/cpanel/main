@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-azapps_others_cpanel()
+azapps_cpanel()
 {
   AZCLOUD_APPS_STORAGE="/var/lib/cpanel/data"
   export AZCLOUD_APPS_STORAGE

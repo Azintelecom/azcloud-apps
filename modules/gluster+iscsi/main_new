@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+azapps_storages_block_gluster_iscsi()
+{
+  PROXY="$(get_proxy)"
+  export PROXY
+  set_proxy
+
+  setup_gluster_storage 'gluster'
+    stage_finished setup_gluster_storage
+}_

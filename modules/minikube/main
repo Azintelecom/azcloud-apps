@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-azapps_kubernetes_minikube()
+azapps_minikube()
 {
   AZCLOUD_APPS_STORAGE="/var/lib/docker"
   export AZCLOUD_APPS_STORAGE

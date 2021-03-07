@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-azapps_kubernetes_cluster()
+azapps_kubernetes()
 {
   AZCLOUD_APPS_STORAGE="/var/lib/docker"
   export AZCLOUD_APPS_STORAGE

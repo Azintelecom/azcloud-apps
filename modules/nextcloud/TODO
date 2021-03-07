@@ -1,0 +1,2 @@
+[-] add crontab to check version, and if new available sent email?
+[-] need to add "'overwriteprotocol' => 'https'," to config.php

@@ -40,7 +40,6 @@ _install_and_setup_docker()
   systemctl enable --now docker
 }
 
-
 install_and_setup_kube()
 {
   if [ "$AZCLOUD_APPS_KUBE_DOCKER_CE" = true ]; then

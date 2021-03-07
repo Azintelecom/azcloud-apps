@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-azapps_others_nextcloud()
+azapps_nextcloud()
 {
   AZCLOUD_APPS_STORAGE="/var/lib/nextcloud/data"
   export AZCLOUD_APPS_STORAGE
