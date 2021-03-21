@@ -78,3 +78,6 @@ deploy()
   
   azapps_"$run_module" >> "$AZCLOUD_APPS_HOME"/app.log 2>&1
 }
+
+main "$@"
+
