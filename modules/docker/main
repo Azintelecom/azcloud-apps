@@ -2,8 +2,10 @@
 
 azapps_docker()
 {
-  AZCLOUD_APPS_STORAGE="/var/lib/docker"
-  export AZCLOUD_APPS_STORAGE
+  if [ -z "$AZCLOUD_APPS_STORAGE" ]; then
+    AZCLOUD_APPS_STORAGE="/var/lib/docker"
+    export AZCLOUD_APPS_STORAGE
+  fi
 
   PROXY="$(get_proxy)"
   export PROXY
@@ -13,7 +15,7 @@ azapps_docker()
     && stage_finished setup_app_storage
   setup_firewall_and_selinux '' 'selinux:permissive' \
     && stage_finished setup_firewall_and_selinux
-  _install_docker \
+  _install_docker_"$AZCLOUD_APPS_DISTR" \
     && stage_finished install_docker
   _install_docker_compose \
     && stage_finished install_docker_compose
